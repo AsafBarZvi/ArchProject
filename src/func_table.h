@@ -14,7 +14,6 @@ struct FuncTableEntry
     std::pair<VQ , VQ> VQS;
 
     //For Bookkeeping 
-    std::string tag = "";
     int dest  = -1;
     int imm   = -1;
 

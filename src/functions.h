@@ -170,7 +170,7 @@ public:
     }
 
 
-    MemAccess& write() { this->new_request = true ; return this->pipe_delay_.back().write(); }
+    MemAccess& write() { this->new_request = true ; this->pipe_delay_.back().write() = MemAccess() ; return this->pipe_delay_.back().write(); }
     const MemAccess& read() {return this->pipe_delay_.front().read(); }
     
 

@@ -1,5 +1,6 @@
-#ifndef DEFINES_H
-#define DEFINES_H
+
+#pragma once
+
 
 enum OP
 {
@@ -17,12 +18,24 @@ enum OP
 
 struct Instruction
 {
-    OP  op  = OP::INVALID;
-    int dst  = -1;
-    int src0 = -1;
-    int src1 = -1;
-    int imm  = -1;
-};
+    unsigned int imm  : 12;
+    unsigned int src1 : 4;
+    unsigned int src0 : 4;
+    unsigned int dst  : 4;
+    unsigned int op   : 4;
+    unsigned int reserved : 4;
+
+
+    Instruction()
+    : imm(0xFFF)
+    , src1(0xF)
+    , src0(0xF)
+    , dst(0xF)
+    , op(0x7) // INVALID
+    , reserved(0x0)
+    {}
+
+} __attribute__((packed));
 
 
 struct Mem
@@ -31,4 +44,3 @@ struct Mem
     float data  = -1;
 };
 
-#endif
