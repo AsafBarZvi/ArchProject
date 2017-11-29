@@ -10,7 +10,8 @@
 #include <memory>
 #include <assert.h>
 #include <algorithm>
-
+#include <iostream>
+#include "printers.hpp"
 
 const int NUM_ISSUES      = 2;
 
@@ -247,10 +248,6 @@ int main(int argc , char ** argv)
        // ---------------------------------- //
        
        /*
-        * TODO update table with new clock info
-        */
-
-       /*
         * ISSUE
         * -> reservatory
         */
@@ -276,6 +273,7 @@ int main(int argc , char ** argv)
                 FuncTableEntry tentry;
                 tentry.busy = false;
                 tentry.dest = inst.dst;
+                tentry.imm  = inst.imm;
                 tentry.op   = OP(inst.op);
                 tentry.VQS.first = register_file.read().at(inst.src0);
                 tentry.VQS.second = register_file.read().at(inst.src1);
@@ -286,12 +284,12 @@ int main(int argc , char ** argv)
                 }
                 else if  (inst.op == OP::MULT)
                 {
-                     auto  tag = adders_reservatory.push(tentry,"mult");
+                     auto  tag = mult_reservatory.push(tentry,"mult");
                      register_file.write().at(inst.dst).set_tag(tag);
                 }
                 else if  (inst.op == OP::DIV)
                 {
-                     auto  tag = adders_reservatory.push(tentry,"div");
+                     auto  tag = div_reservatory.push(tentry,"div");
                      register_file.write().at(inst.dst).set_tag(tag);
                 }
                 else if  (inst.op == OP::ST)
@@ -303,7 +301,8 @@ int main(int argc , char ** argv)
                      auto  tag = load_buffer.push(tentry,"ld");
                      register_file.write().at(inst.dst).set_tag(tag);
                 }
-                     
+                    
+                std::cout << "In Resv -> " << inst << std::endl;
                 inst_queue.pop();
             }
             else

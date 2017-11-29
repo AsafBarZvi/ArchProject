@@ -164,7 +164,7 @@ class Memory : public SyncBlock < MemAccess >
 public:
     Memory(const std::string&  mem_file , int delay)
     {
-        mem_cache_.resize(4096,0);
+        mem_cache_.resize(4096,0x06000000);
         std::ifstream file(mem_file);
         if (!file.is_open())
             throw std::runtime_error("unable to open file " + mem_file); 

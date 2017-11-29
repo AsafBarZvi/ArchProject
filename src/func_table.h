@@ -3,7 +3,6 @@
 #include "vq.h"
 #include "sync_block.h"
 #include "defines.h"
-#include <map>
 #include <stdint.h>
 #include <memory>
 
@@ -27,6 +26,11 @@ struct FuncTableEntry
     } result;
 
     FuncTableEntry* creator = NULL;
+
+    FuncTableEntry()
+    {
+        this->result.as_int = 0;
+    }
 
 };
 
