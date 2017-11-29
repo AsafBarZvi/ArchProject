@@ -9,6 +9,7 @@
 #include "inst_decode.h"
 #include <memory>
 #include <assert.h>
+#include <algorithm>
 
 
 const int NUM_ISSUES      = 2;
@@ -40,7 +41,7 @@ void resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , std::vector< std
                  if (!unit->is_busy())
                  {
                      req.busy = true;
-                     auto cmd = unit->write();
+                     auto & cmd = unit->write();
                      cmd = req;
                      cmd.creator = &req;
                  }
@@ -68,7 +69,7 @@ bool resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , MemAccess & mem_
 
 
 void updateUnit(std::list< AsyncQueue<FuncTableEntry> * > &     function_unit_tables,
-                FuncTableEntry &                                out,
+                const FuncTableEntry &                          out,
                 Register &                                      register_file)
 {
     /***
@@ -116,7 +117,7 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
                                 std::vector< std::shared_ptr<BaseFunction> > &    multipliers,
                                 std::vector< std::shared_ptr<BaseFunction> > &    dividers,
                                 Register&                                         register_file,
-                                MemAccess&                                        mem_read)
+                                const MemAccess&                                  mem_read)
 {
 
     //TODO reservatory  not pushed for current cycle
@@ -127,7 +128,7 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
 
         for (auto & unit : *unit_group)
         {
-            auto out = unit->read();
+            auto & out = unit->read();
             if (out.op == OP::DONE)
             {
                 updateUnit(function_unit_tables , out , register_file);
@@ -139,7 +140,7 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
 
 
     // TODO Assuming mem data has a dedocated CDB, so arbitration on mem out data 
-    auto out = mem_read.port[3];
+    auto & out = mem_read.port[2];
     if (out.op == OP::DONE)
     {
         updateUnit(function_unit_tables, out , register_file);
@@ -208,7 +209,7 @@ int main(int argc , char ** argv)
        blocks.push_back(dividers.back().get());
    }
 
-   Memory mem_unit = Memory("mem_file.txt" , mem_delay);
+   Memory mem_unit = Memory("memin.txt" , mem_delay);
    blocks.push_back(&mem_unit);
 
    int pc = 0;
@@ -219,7 +220,7 @@ int main(int argc , char ** argv)
        /*
         * FETCH
         */
-       auto mem_write = mem_unit.write();
+       auto & mem_write = mem_unit.write();
        if (!inst_queue.is_half_full()) 
        {    // TODO is this logic true ? 
             // FETCH 0
@@ -227,14 +228,14 @@ int main(int argc , char ** argv)
             mem_write.port[0].dest = 0;
             mem_write.port[0].imm  = pc;
             // FETCH 1
-            mem_write.port[0].op = OP::LD;
-            mem_write.port[0].dest = 0;
-            mem_write.port[0].imm  = pc + 1;
+            mem_write.port[1].op = OP::LD;
+            mem_write.port[1].dest = 0;
+            mem_write.port[1].imm  = pc + 1;
             pc +=2;
        }
 
 
-       auto mem_read = mem_unit.read();
+       auto & mem_read = mem_unit.read();
        assert(!inst_queue.is_full());
        // TODO assuming write to instruction queue is not through CDB, 
        // i.e. every clock DATA can be written to register file
@@ -257,7 +258,7 @@ int main(int argc , char ** argv)
        bool is_halt = false;
        for (int i = 0 ; i < NUM_ISSUES ; i ++)
        {
-            auto inst = inst_queue.peek();
+            auto & inst = inst_queue.peek();
             if (inst.op == OP::HALT)
             {
                 is_halt = true;
@@ -280,26 +281,26 @@ int main(int argc , char ** argv)
                 tentry.VQS.second = register_file.read().at(inst.src1);
                 if       (inst.op == OP::ADD || inst.op == OP::SUB)
                 {
-                     auto tag = adders_reservatory.push(tentry,"add");
+                     auto  tag = adders_reservatory.push(tentry,"add");
                      register_file.write().at(inst.dst).set_tag(tag);
                 }
                 else if  (inst.op == OP::MULT)
                 {
-                     auto tag = adders_reservatory.push(tentry,"mult");
+                     auto  tag = adders_reservatory.push(tentry,"mult");
                      register_file.write().at(inst.dst).set_tag(tag);
                 }
                 else if  (inst.op == OP::DIV)
                 {
-                     auto tag = adders_reservatory.push(tentry,"div");
+                     auto  tag = adders_reservatory.push(tentry,"div");
                      register_file.write().at(inst.dst).set_tag(tag);
                 }
                 else if  (inst.op == OP::ST)
                 {
-                     auto tag = store_buffer.push(tentry,"st");
+                     auto  tag = store_buffer.push(tentry,"st");
                 }
                 else if  (inst.op == OP::LD)
                 {
-                     auto tag = load_buffer.push(tentry,"ld");
+                     auto  tag = load_buffer.push(tentry,"ld");
                      register_file.write().at(inst.dst).set_tag(tag);
                 }
                      
@@ -310,6 +311,14 @@ int main(int argc , char ** argv)
        }
 
 
+       if (is_halt)
+           break;
+
+       /*
+        * ISSUE
+        * -> update tables with new info from functional units and mem out
+        */
+
        updateTableWithUnitsOutout(function_unit_tables,
                                   adders,
                                   multipliers,
@@ -319,7 +328,7 @@ int main(int argc , char ** argv)
        
        /*
         * ISSUE
-        * -> functional units
+        * -> dispatch to functional units
         */
        resevatoryToUnit(adders_reservatory,adders);
        resevatoryToUnit(mult_reservatory,multipliers);
@@ -327,6 +336,7 @@ int main(int argc , char ** argv)
        resevatoryToUnit(load_buffer,mem_write) || resevatoryToUnit(store_buffer,mem_write);    //Always tring to load and then store
 
 
+       std::for_each(blocks.begin() , blocks.end() , []( SyncBlockBase* b) { b->clock(); } );
 
    }
 

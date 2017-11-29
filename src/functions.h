@@ -162,18 +162,24 @@ class Memory : public SyncBlock < MemAccess >
 
 
 public:
-    Memory(const std::string mem_file , int delay)
+    Memory(const std::string&  mem_file , int delay)
     {
         mem_cache_.resize(4096,0);
-        std::ifstream file("mem_file.txt");
+        std::ifstream file(mem_file);
+        if (!file.is_open())
+            throw std::runtime_error("unable to open file " + mem_file); 
         std::string str;
-        std::stringstream converter;
+        int offset = 0;
         while (std::getline(file , str))
         {
             uint32_t temp;
+            std::stringstream converter;
             converter << std::hex << str;
             converter >> temp;
-            mem_cache_.push_back( temp );
+            mem_cache_.at(offset) = temp;
+            offset++;
+            if (offset >= 4096)
+                throw std::runtime_error(mem_file + " contains more then 4096 hex lines");
         }
 
         this->pipe_delay_.resize(delay);
@@ -183,8 +189,8 @@ public:
     virtual ~Memory() {}
 
     bool is_busy() { return this->new_request; }
-    MemAccess& write() { this->new_request = true ; this->pipe_delay_.back().write() = MemAccess() ; return this->pipe_delay_.back().write(); }
-    const MemAccess& read() {return this->pipe_delay_.front().read(); }
+    MemAccess& write() { this->new_request = true ; this->pipe_delay_.front().write() = MemAccess() ; return this->pipe_delay_.front().write(); }
+    const MemAccess& read() {return this->pipe_delay_.back().read(); }
     
 
 
@@ -194,10 +200,10 @@ public:
             this->new_request = false;
         else
         {
-            this->pipe_delay_.back().write() = MemAccess();
+            this->pipe_delay_.front().write() = MemAccess();
         }
         
-        for (auto & cmd :  this->pipe_delay_.front().write().port)
+        for (auto & cmd :  this->pipe_delay_.back().write().port)
         {
             assert(cmd.op == OP::ST || cmd.op == OP::LD || cmd.op == OP::INVALID);
             if (cmd.op == OP::ST)
@@ -220,6 +226,8 @@ public:
 
         for (int i =1 ; i < this->pipe_delay_.size() ; i++)
             this->pipe_delay_.at(i).write() = this->pipe_delay_.at(i-1).read();
+
+        this->pipe_delay_.front().write() = MemAccess();
 
     }
 
