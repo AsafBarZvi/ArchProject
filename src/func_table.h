@@ -1,12 +1,10 @@
-#ifndef FUNC_TABLE_H
-#define FUNC_TABLE_H
-
+#pragma once
 
 #include "vq.h"
 #include "sync_block.h"
 #include "defines.h"
 #include <map>
-
+#include <stdint.h>
 
 struct FuncTableEntry
 {
@@ -14,6 +12,18 @@ struct FuncTableEntry
     bool busy = false;
     OP   op   = OP::INVALID;
     std::pair<VQ , VQ> VQS;
+
+    //For Bookkeeping 
+    std::string tag = "";
+    int dest  = -1;
+    int imm   = -1;
+
+    union result_t
+    {
+        uint32_t as_int;
+        float    as_float;
+    } result;
+
 };
 
 
@@ -30,4 +40,3 @@ public:
 
 };
 
-#endif

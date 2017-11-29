@@ -10,7 +10,8 @@ enum OP
     MULT,
     DIV,
     HALT,
-    INVALID
+    INVALID,
+    DONE
 };
 
 
@@ -21,6 +22,13 @@ struct Instruction
     int src0 = -1;
     int src1 = -1;
     int imm  = -1;
+};
+
+
+struct Mem
+{
+    int address = -1;
+    float data  = -1;
 };
 
 #endif
