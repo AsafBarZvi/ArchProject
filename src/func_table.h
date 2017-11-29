@@ -5,6 +5,8 @@
 #include "defines.h"
 #include <map>
 #include <stdint.h>
+#include <memory>
+
 
 struct FuncTableEntry
 {
@@ -13,7 +15,8 @@ struct FuncTableEntry
     OP   op   = OP::INVALID;
     std::pair<VQ , VQ> VQS;
 
-    //For Bookkeeping 
+    //For Bookkeeping
+    std::string tag = "";
     int dest  = -1;
     int imm   = -1;
 
@@ -23,19 +26,7 @@ struct FuncTableEntry
         float    as_float;
     } result;
 
-};
-
-
-class FuncTable : public SyncBlock< std::map< std::string , FuncTableEntry> >
-{
-    std::map< std::string , FuncTableEntry> current_;
-    std::map< std::string , FuncTableEntry> update_;
-
-public:
-
-    const std::map< std::string , FuncTableEntry>& read() { return this->current_;}
-    std::map< std::string , FuncTableEntry>& write() {return this->update_;}
-    void clock() { this->current_ = this->update_ ; }
+    FuncTableEntry* creator = NULL;
 
 };
 

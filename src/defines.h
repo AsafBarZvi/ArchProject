@@ -38,9 +38,4 @@ struct Instruction
 } __attribute__((packed));
 
 
-struct Mem
-{
-    int address = -1;
-    float data  = -1;
-};
 

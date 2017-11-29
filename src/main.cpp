@@ -7,6 +7,11 @@
 #include "sync_block.h"
 #include "register.h"
 #include "inst_decode.h"
+#include <memory>
+#include <assert.h>
+
+
+const int NUM_ISSUES      = 2;
 
 const int add_nr_reservation = 2;
 const int mul_nr_reservation = 2;
@@ -24,67 +29,193 @@ const int mem_delay    = 3;
 
 
 
+void resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , std::vector< std::shared_ptr<BaseFunction> > & units)
+{
+    for (auto & req : reservatory.get_queue())
+    {
+         if (!req.busy && req.VQS.first.is_ready() && req.VQS.second.is_ready())
+         {
+             for (auto & unit : units)
+             {
+                 if (!unit->is_busy())
+                 {
+                     req.busy = true;
+                     auto cmd = unit->write();
+                     cmd = req;
+                     cmd.creator = &req;
+                 }
+
+             }
+         }
+    }
+}
+
+bool resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , MemAccess & mem_write)
+{
+    for (auto & req : reservatory.get_queue())
+    {
+         if (!req.busy && req.VQS.first.is_ready() && req.VQS.second.is_ready())
+         {
+             req.busy = true;
+             mem_write.port[2] = req;
+             mem_write.port[2].creator = &req;
+             return true;
+         }
+    }
+    return false;
+}
+
+
+
+void updateUnit(std::list< AsyncQueue<FuncTableEntry> * > &     function_unit_tables,
+                FuncTableEntry &                                out,
+                Register &                                      register_file)
+{
+    /***
+     * Update reservatory with functional unit update
+     */
+    for (auto & unit_reservatory : function_unit_tables)
+    {
+        for (auto & unit_req : unit_reservatory->get_queue())
+        {
+            if (unit_req.VQS.first.tag() == out.tag)
+                unit_req.VQS.first.set_val(out.result.as_float);
+            if (unit_req.VQS.second.tag() == out.tag)
+                unit_req.VQS.second.set_val(out.result.as_float);
+
+        }
+
+        // Remove Done job from reservatory
+        auto i = unit_reservatory->get_queue().begin() ;
+        while ( i != unit_reservatory->get_queue().end() )
+        {
+            if ( i->tag == out.tag)
+            {
+                assert(out.creator == &(*i));
+                i = unit_reservatory->get_queue().erase(i);
+                break;
+            }
+            i++;
+
+        }
+    }
+
+    /***
+     * Update register file with functional unit update
+     */
+    for (auto & reg : register_file.write())
+    {
+        if (reg.tag() == out.tag)
+            reg.set_val(out.result.as_float);
+    }
+}
+
+
+void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &       function_unit_tables ,
+                                std::vector< std::shared_ptr<BaseFunction> > &    adders,
+                                std::vector< std::shared_ptr<BaseFunction> > &    multipliers,
+                                std::vector< std::shared_ptr<BaseFunction> > &    dividers,
+                                Register&                                         register_file,
+                                MemAccess&                                        mem_read)
+{
+
+    //TODO reservatory  not pushed for current cycle
+    
+    std::list< std::vector< std::shared_ptr<BaseFunction> > * > units = {&adders , &multipliers , &dividers };
+    for (auto & unit_group : units)
+    {
+
+        for (auto & unit : *unit_group)
+        {
+            auto out = unit->read();
+            if (out.op == OP::DONE)
+            {
+                updateUnit(function_unit_tables , out , register_file);
+                break; // TODO Single CDB per functional unit group , .i.e. unit is busy while CDB is not available 
+
+            }
+        }
+    }
+
+
+    // TODO Assuming mem data has a dedocated CDB, so arbitration on mem out data 
+    auto out = mem_read.port[3];
+    if (out.op == OP::DONE)
+    {
+        updateUnit(function_unit_tables, out , register_file);
+        assert(register_file.write().at(mem_read.port[2].dest).val() == out.result.as_float);
+    }
+
+}
+
+
 int main(int argc , char ** argv)
 {
    /*
     * Init Units
     */
 
-
-   std::list< SyncBlockBase* > blocks; 
+   std::list< SyncBlockBase* > blocks;
+   std::list< AsyncQueue<FuncTableEntry> * > function_unit_tables;
    
    //TODO assuming AsyncQueue for instruction queue
    AsyncQueue<Instruction> inst_queue(16);
    //blocks.push_back(&inst_queue);
 
-   AsyncQueue<Mem> store_buffer(mem_nr_store_buffer);
+   AsyncQueue<FuncTableEntry> store_buffer(mem_nr_store_buffer);
    //blocks.push_back(&store_buffer);
+   function_unit_tables.push_back(&store_buffer);
    
-   AsyncQueue<Mem> load_buffer(mem_nr_load_buffer);
+   AsyncQueue<FuncTableEntry> load_buffer(mem_nr_load_buffer);
    //blocks.push_back(&load_buffer);
+   function_unit_tables.push_back(&load_buffer);
 
    Register register_file(16);
    blocks.push_back(&register_file);
 
    AsyncQueue<FuncTableEntry>  adders_reservatory(add_nr_reservation);
    //blocks.push_back(&adders_reservatory);
+   function_unit_tables.push_back(&adders_reservatory);
 
    AsyncQueue<FuncTableEntry>  mult_reservatory(mul_nr_reservation);
    //blocks.push_back(&mult_reservatory);
+   function_unit_tables.push_back(&mult_reservatory);
 
    AsyncQueue<FuncTableEntry>  div_reservatory(div_nr_reservation);
    //blocks.push_back(&div_reservatory);
+   function_unit_tables.push_back(&div_reservatory);
 
 
-   std::vector<Add>       adders;
+   std::vector< std::shared_ptr<BaseFunction> >       adders;
    for (int i = 0 ; i < add_nr_units ; i++)
    {
-       adders.push_back(Add(add_delay));
-       blocks.push_back(&adders.back());
+       adders.push_back(std::shared_ptr<BaseFunction> (new Add(add_delay)));
+       blocks.push_back(adders.back().get());
+
    }
 
-   std::vector<Mult>      multipliers;
+   std::vector< std::shared_ptr<BaseFunction> >      multipliers;
    for (int i = 0 ; i < mul_nr_units ; i++)
    {
-       multipliers.push_back(Mult(mult_delay));
-       blocks.push_back(&multipliers.back());
+       multipliers.push_back(std::shared_ptr<BaseFunction>( new Mult(mult_delay)) );
+       blocks.push_back(multipliers.back().get());
    }
 
-   std::vector<Div>       dividers;
+   std::vector<std::shared_ptr<BaseFunction> >       dividers;
    for (int i = 0 ; i < div_nr_units ; i++)
    {
-       dividers.push_back(Div(div_delay));
-       blocks.push_back(&dividers.back());
+       dividers.push_back(std::shared_ptr<BaseFunction>(new Div(div_delay)) );
+       blocks.push_back(dividers.back().get());
    }
 
    Memory mem_unit = Memory("mem_file.txt" , mem_delay);
    blocks.push_back(&mem_unit);
 
-   //TODO NO use of memory store load buffer
-
    int pc = 0;
    while (true)
    {
+
+       // ---------------------------------- //
        /*
         * FETCH
         */
@@ -99,9 +230,9 @@ int main(int argc , char ** argv)
             mem_write.port[0].op = OP::LD;
             mem_write.port[0].dest = 0;
             mem_write.port[0].imm  = pc + 1;
+            pc +=2;
        }
 
-       pc +=2;
 
        auto mem_read = mem_unit.read();
        assert(!inst_queue.is_full());
@@ -111,49 +242,92 @@ int main(int argc , char ** argv)
            inst_queue.push(decode(mem_read.port[0].result.as_int));
        if (mem_read.port[1].op == OP::DONE)
            inst_queue.push(decode(mem_read.port[1].result.as_int));
-       if (mem_read.port[2].op == OP::DONE)
-           register_file.write().at(mem_read.port[2].dest).set_val(mem_read.port[2].result.as_float);
 
        // ---------------------------------- //
+       
+       /*
+        * TODO update table with new clock info
+        */
 
        /*
         * ISSUE
+        * -> reservatory
         */
 
-       auto inst = inst_queue.peek().second;
-       bool available_reservatory = ( (inst.op == OP::ADD || inst.op == OP::SUB) && (!adders_reservatory.is_full()) ) ||
-                                    ( inst.op  == OP::MULT && !mult_reservatory.is_full() )                           ||
-                                    ( inst.op  == OP::DIV  && !div_reservatory.is_full()  )                            ;
-
-       if (available_reservatory)
+       bool is_halt = false;
+       for (int i = 0 ; i < NUM_ISSUES ; i ++)
        {
-           FuncTableEntry tentry;
-           tentry.busy = true;
-           tentry.dest = inst.dst;
-           tentry.op   = OP(inst.op);
-           tentry.VQS.first = register_file.read().at(inst.src0);
-           tentry.VQS.second = register_file.read().at(inst.src1);
-           if       (inst.op == OP::ADD || inst.op == OP::SUB)
-           {
-                auto tag = adders_reservatory.push(tentry,"add");
-                register_file.write().at(inst.dst).set_tag(tag);
-           }
-           else if  (inst.op == OP::MULT)
-           {
-                auto tag = adders_reservatory.push(tentry,"mult");
-                register_file.write().at(inst.dst).set_tag(tag);
-           }
-           else if  (inst.op == OP::DIV)
-           {
-                auto tag = adders_reservatory.push(tentry,"div");
-                register_file.write().at(inst.dst).set_tag(tag);
-           }
-                
-           inst_queue.pop();
+            auto inst = inst_queue.peek();
+            if (inst.op == OP::HALT)
+            {
+                is_halt = true;
+                break;
+            }
+
+            bool available_reservatory = ( (inst.op == OP::ADD || inst.op == OP::SUB) && (!adders_reservatory.is_full()) ) ||
+                                         ( inst.op  == OP::MULT && !mult_reservatory.is_full() )                           ||
+                                         ( inst.op  == OP::DIV  && !div_reservatory.is_full()  )                           ||
+                                         ( inst.op  == OP::ST   && !store_buffer.is_full()     )                           ||
+                                         ( inst.op  == OP::LD   && !load_buffer.is_full()      )                           ;
+
+            if (available_reservatory)
+            {
+                FuncTableEntry tentry;
+                tentry.busy = false;
+                tentry.dest = inst.dst;
+                tentry.op   = OP(inst.op);
+                tentry.VQS.first = register_file.read().at(inst.src0);
+                tentry.VQS.second = register_file.read().at(inst.src1);
+                if       (inst.op == OP::ADD || inst.op == OP::SUB)
+                {
+                     auto tag = adders_reservatory.push(tentry,"add");
+                     register_file.write().at(inst.dst).set_tag(tag);
+                }
+                else if  (inst.op == OP::MULT)
+                {
+                     auto tag = adders_reservatory.push(tentry,"mult");
+                     register_file.write().at(inst.dst).set_tag(tag);
+                }
+                else if  (inst.op == OP::DIV)
+                {
+                     auto tag = adders_reservatory.push(tentry,"div");
+                     register_file.write().at(inst.dst).set_tag(tag);
+                }
+                else if  (inst.op == OP::ST)
+                {
+                     auto tag = store_buffer.push(tentry,"st");
+                }
+                else if  (inst.op == OP::LD)
+                {
+                     auto tag = load_buffer.push(tentry,"ld");
+                     register_file.write().at(inst.dst).set_tag(tag);
+                }
+                     
+                inst_queue.pop();
+            }
+            else
+                break;
        }
 
-   }
 
-   
+       updateTableWithUnitsOutout(function_unit_tables,
+                                  adders,
+                                  multipliers,
+                                  dividers,
+                                  register_file,
+                                  mem_read);
+       
+       /*
+        * ISSUE
+        * -> functional units
+        */
+       resevatoryToUnit(adders_reservatory,adders);
+       resevatoryToUnit(mult_reservatory,multipliers);
+       resevatoryToUnit(div_reservatory,dividers);
+       resevatoryToUnit(load_buffer,mem_write) || resevatoryToUnit(store_buffer,mem_write);    //Always tring to load and then store
+
+
+
+   }
 
 }

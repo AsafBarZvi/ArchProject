@@ -73,8 +73,8 @@ template< typename T>
 class AsyncQueue 
 {
 
-    std::list< std::pair<std::string , T> > queue_;
-    std::pair< std::string , T >            null = std::make_pair("",T());
+    std::list< T > queue_;
+    T                                       null = T();
     int size ;
     int id = 0;
 
@@ -84,7 +84,7 @@ public:
     : size(size)
     {}
 
-    std::string push(const T& inst , const std::string & tag = "")
+    std::string push(const T& inst , const std::string & tag)
     {
         assert(this->queue_.size() <= this->size);
         id++;
@@ -92,21 +92,30 @@ public:
         if (!tag.empty())
         {
             std::string ntag = tag + std::to_string(id);
-            this->queue_.push_back( std::make_pair(tag,  inst) );
+            this->queue_.push_back(  inst );
+            this->queue_.back().tag = ntag;
             return ntag;
         }
         
-        this->queue_.push_back( std::make_pair(""  ,  inst) );
+        this->queue_.push_back( inst );
         return "";
+        
+    }
+    
+    void push(const T& inst)
+    {
+        assert(this->queue_.size() <= this->size);
+        this->queue_.push_back(  inst );
         
     }
 
     bool is_full() {return this->queue_.size() == size ; }
 
-    bool is_half_full() { return this->queue_.size() > size/2 ;} 
+    bool is_half_full() { return this->queue_.size() > size/2 ;}
 
+    std::list< T > &  get_queue() { return this->queue_; }
 
-    const std::pair<std::string , T> & peek()
+    T & peek()
     {
         if (this->queue_.empty())
             return null;

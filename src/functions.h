@@ -30,16 +30,16 @@ public:
     : delay(delay)
     {}
 
-    bool is_busy() { return time != -1;}
+    virtual bool is_busy() { return time != -1;}
 
-    FuncTableEntry&  write()
+    virtual FuncTableEntry&  write()
     {
         assert(!is_busy());
         time = delay;
         return new_cmd;
     }
 
-    const FuncTableEntry& read()
+    virtual const FuncTableEntry& read()
     {
         if (time == 0)
         {
@@ -51,7 +51,7 @@ public:
     }
 
    
-    void clock()
+    virtual void clock()
     {
         cmd = new_cmd;
         if (time > 0 )
@@ -59,6 +59,8 @@ public:
             time--;
         }
     }
+
+    virtual ~BaseFunction() {}
 
 };
 
@@ -73,12 +75,16 @@ class Add : public BaseFunction
         if (cmd.op == OP::ADD)
         {
             this->result.result.as_float = cmd.VQS.first.val() + cmd.VQS.second.val() ;
+            this->result.creator = cmd.creator;
+            this->result.tag = cmd.tag;
             this->result.op = OP::DONE;
             return this->result;
         }
         if (cmd.op == OP::SUB)
         {
             this->result.result.as_float = cmd.VQS.first.val() - cmd.VQS.second.val() ;
+            this->result.creator = cmd.creator;
+            this->result.tag = cmd.tag;
             this->result.op = OP::DONE;
             return this->result;
         }
@@ -96,6 +102,8 @@ class Mult : public BaseFunction
     {
         assert(cmd.op == OP::MULT);
         assert(cmd.VQS.first.is_ready() && cmd.VQS.second.is_ready());
+        this->result.creator = cmd.creator;
+        this->result.tag = cmd.tag;
         this->result.result.as_float = cmd.VQS.first.val() * cmd.VQS.second.val();
         this->result.op = OP::DONE;
         return this->result;
@@ -110,7 +118,9 @@ class Div : public BaseFunction
     {
         assert(cmd.op == OP::DIV);
         assert(cmd.VQS.first.is_ready() && cmd.VQS.second.is_ready());
+        this->result.creator = cmd.creator;
         this->result.result.as_float = cmd.VQS.first.val() / cmd.VQS.second.val();
+        this->result.tag = cmd.tag;
         this->result.op = OP::DONE;
         return this->result;
     }
@@ -170,6 +180,9 @@ public:
     }
 
 
+    virtual ~Memory() {}
+
+    bool is_busy() { return this->new_request; }
     MemAccess& write() { this->new_request = true ; this->pipe_delay_.back().write() = MemAccess() ; return this->pipe_delay_.back().write(); }
     const MemAccess& read() {return this->pipe_delay_.front().read(); }
     
