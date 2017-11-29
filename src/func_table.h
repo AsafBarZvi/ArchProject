@@ -1,3 +1,7 @@
+#ifndef FUNC_TABLE_H
+#define FUNC_TABLE_H
+
+
 #include "vq.h"
 #include "sync_block.h"
 #include "defines.h"
@@ -25,3 +29,5 @@ public:
     void clock() { this->current_ = this->update_ ; }
 
 };
+
+#endif

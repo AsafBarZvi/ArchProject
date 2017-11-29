@@ -1,3 +1,7 @@
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
+
+
 #include "func_table.h"
 #include <string>
 #include "vq.h"
@@ -103,3 +107,5 @@ class Div : public BaseFunction
     }
 
 };
+
+#endif

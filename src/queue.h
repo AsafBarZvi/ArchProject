@@ -1,3 +1,6 @@
+
+#pragma once
+
 #include "sync_block.h"
 #include "func_table.h"
 #include <list>

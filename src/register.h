@@ -1,3 +1,6 @@
+
+#pragma once
+
 #include <vector>
 #include "sync_block.h"
 #include "vq.h"

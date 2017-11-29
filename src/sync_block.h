@@ -1,3 +1,7 @@
+
+
+#pragma once
+
 template<typename T>
 class SyncBlock
 {
@@ -6,3 +10,4 @@ public:
     virtual T&       write() = 0;
     virtual void     clock() = 0;
 };
+
