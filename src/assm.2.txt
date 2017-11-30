@@ -1,0 +1,62 @@
+op      dst     s0      s1      imm
+ADD     2       1       1       0
+ADD     2       2       1       0
+ADD     2       2       1       0
+ADD     2       2       1       0
+ADD     2       2       1       0
+ADD     2       2       1       0
+ADD     2       2       1       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+HALT    0       0       0       0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0

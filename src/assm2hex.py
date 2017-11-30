@@ -1,4 +1,14 @@
 import struct
+import sys
+import argparse
+
+parser = argparse.ArgumentParser("assm to hex converter")
+
+parser.add_argument("assm",
+                    help="input assm file , one line for Header, cmd per line")
+
+args   = parser.parse_args()
+
 
 
 
@@ -7,7 +17,7 @@ def float_to_hex(f):
 
 
 hex_out = []
-assm_lines = [line.rstrip() for line in open('assm.txt').readlines()][1:]
+assm_lines = [line.rstrip() for line in open(args.assm).readlines()][1:]
 for assm in assm_lines:
     hex_line = []
     assm_parts = assm.split()

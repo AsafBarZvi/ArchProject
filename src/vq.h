@@ -9,7 +9,7 @@ class VQ
     float       value_   = -1.0;
 
 public:
-    bool is_ready() { return tag_.empty();}
+    bool is_ready() const { return tag_.empty();}
     void set_tag(const std::string & ntag) { tag_ = ntag ; value_ = -1;}
     void set_val(const float val) { tag_ = "" ; value_ = val; }
     float val() const { return value_; }

@@ -5,6 +5,7 @@
 #include <map>
 #include "trace.h"
 #include <algorithm>
+#include "register.h"
 
 
 const std::map<int , std::string> OP_names =
@@ -23,7 +24,12 @@ const std::map<int , std::string> OP_names =
 
 std::ostream& operator <<(std::ostream& osObject, const VQ& obj)
 {
-    return osObject << "tag:" <<  obj.tag() << ",val:" << obj.val(); 
+    if (obj.is_ready())
+        osObject << obj.val();
+    else
+        osObject << obj.tag();
+
+    return osObject;
 }
 
 std::ostream& operator <<(std::ostream& osObject, const Instruction & obj)
@@ -36,6 +42,17 @@ std::ostream& operator <<(std::ostream& osObject, const Instruction & obj)
 }
 
 
+std::ostream& operator <<(std::ostream& osObject, const Register & obj)
+{
+    int offset = 0;
+    for (const auto & reg : const_cast<Register*>(&obj)->read())
+    {
+        osObject << "F" << offset << ":" << reg << "\n";
+        offset ++;
+    }
+
+    return osObject;
+}
 
 std::ostream& operator <<(std::ostream& osObject , const std::map<int , TraceEntry> & obj)
 {

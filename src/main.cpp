@@ -16,29 +16,29 @@
 #include "trace.h"
 
 
-const int NUM_ISSUES      = 2;
+const int NUM_ISSUES      = 2; // NOTE: was defined to be 2, non-configurable in project
 
-const int add_nr_reservation = 2;
+const int add_nr_reservation = 3;
 const int mul_nr_reservation = 2;
-const int div_nr_reservation = 2;
-const int add_nr_units = 2;
+const int div_nr_reservation = 1;
+const int add_nr_units = 3;
 const int mul_nr_units = 2;
-const int div_nr_units = 2;
+const int div_nr_units = 1;
 const int add_delay    = 2;
-const int mult_delay   = 4;
-const int div_delay    = 6;
-const int mem_nr_store_buffer = 3;
+const int mult_delay   = 10;
+const int div_delay    = 12;
+const int mem_nr_store_buffer = 1;
 const int mem_nr_load_buffer  = 3;
-const int mem_delay    = 3;
+const int mem_delay    = 2;
 
 
 
 
-void resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , std::vector< std::shared_ptr<BaseFunction> > & units)
+void resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , std::vector< std::shared_ptr<BaseFunction> > & units , Register& register_file)
 {
     for (auto & req : reservatory.get_queue())
     {
-         if (!req.busy && req.VQS.first.is_ready() && req.VQS.second.is_ready())
+         if (!req.busy && register_file.read().at(req.instruction.src0).is_ready() && register_file.read().at(req.instruction.src1).is_ready())
          {
              for (auto & unit : units)
              {
@@ -147,7 +147,7 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
     }
 
 
-    // TODO Assuming mem data has a dedocated CDB, so arbitration on mem out data 
+    // TODO Assuming mem data has a dedicated CDB, so arbitration on mem out data 
     auto & out = mem_read.port[2];
     if (out.op == OP::DONE)
     {
@@ -295,15 +295,21 @@ int main(int argc , char ** argv)
                                          ( inst.op  == OP::ST   && !store_buffer.is_full()     )                           ||
                                          ( inst.op  == OP::LD   && !load_buffer.is_full()      )                           ;
 
-            if (available_reservatory)
+            /* TODO NOTE THIS NEW RULE NOT COVERD IN CLASS !!!
+             * Check if not accumulator, dst == src and dst is pending result, in that case must wait for result,
+             * since re-tagging dst with cause deadlock, infinitely waiting for src
+             */
+            bool is_accumulator       = (( inst.dst == inst.src0 || inst.dst == inst.src1 ) & !register_file.write().at(inst.dst).is_ready());
+
+            if (available_reservatory && !is_accumulator)
             {
                 FuncTableEntry tentry;
                 tentry.busy = false;
                 tentry.instruction = inst;
                 tentry.op   = OP(inst.op);
                 tentry.pc   = inst_pair.first;
-                tentry.VQS.first = register_file.read().at(inst.src0);
-                tentry.VQS.second = register_file.read().at(inst.src1);
+                tentry.VQS.first = register_file.write().at(inst.src0);         // TODO changed .read to .write, need most updated value of reg in ISSUE 2
+                tentry.VQS.second = register_file.write().at(inst.src1);
                 if       (inst.op == OP::ADD || inst.op == OP::SUB)
                 {
                      auto  tag = adders_reservatory.push(tentry,"add");
@@ -371,9 +377,9 @@ int main(int argc , char ** argv)
         * ISSUE
         * -> dispatch to functional units
         */
-       resevatoryToUnit(adders_reservatory,adders);
-       resevatoryToUnit(mult_reservatory,multipliers);
-       resevatoryToUnit(div_reservatory,dividers);
+       resevatoryToUnit(adders_reservatory,adders,register_file);
+       resevatoryToUnit(mult_reservatory,multipliers,register_file);
+       resevatoryToUnit(div_reservatory,dividers,register_file);
        resevatoryToUnit(load_buffer,mem_write) || resevatoryToUnit(store_buffer,mem_write);    //Always tring to load and then store
 
 
@@ -383,5 +389,6 @@ int main(int argc , char ** argv)
 
 
    std::cout << IT << std::endl;
+   std::cout << register_file << std::endl;
 
 }
