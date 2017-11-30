@@ -2,6 +2,7 @@
 ```
 cd src
 python assm2hex.py
+cd ..
 mkdir build
 cd build
 cmake ..
