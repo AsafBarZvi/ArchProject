@@ -1,5 +1,5 @@
 #include "trace.h"
 
-std::map < std::string , TraceEntry> InstructionTrace;
+std::map < int , TraceEntry> InstructionTrace;
 
 int CLOCK = -1;

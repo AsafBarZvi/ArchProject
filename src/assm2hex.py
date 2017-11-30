@@ -1,9 +1,13 @@
+import struct
 
 
+
+def float_to_hex(f):
+    return hex(struct.unpack('<I', struct.pack('<f', f))[0])[2:]
 
 
 hex_out = []
-assm_lines = [line.rstrip() for line in open('assm.txt').readlines()]
+assm_lines = [line.rstrip() for line in open('assm.txt').readlines()][1:]
 for assm in assm_lines:
     hex_line = []
     assm_parts = assm.split()
@@ -22,6 +26,11 @@ for assm in assm_lines:
            hex_line.append("05")
     elif (op_code.upper() == "HALT"):
            hex_line.append("06")
+    elif (op_code.upper() == "NOPE"):
+           hex_line.append("09")
+    elif (op_code.upper() == "VALUE"):
+        hex_out.append(float_to_hex(float(assm_parts[1])))
+        continue
     else:
         print "unknown code {}".format(assm)
         assert(0)

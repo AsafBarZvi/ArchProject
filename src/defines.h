@@ -16,7 +16,8 @@ enum OP
     DIV,
     HALT,
     INVALID,
-    DONE
+    DONE,
+    NOPE
 };
 
 

@@ -60,7 +60,7 @@ public:
             time--;
             if (time == 0)
             {
-                auto & trace = IT[cmd.instruction.as_string()];
+                auto & trace = IT[cmd.pc];
                 trace.cycle_executed_end = CLOCK;
             }
         }
@@ -145,6 +145,8 @@ struct MemAccess
 };
 
 
+#define DATA_PORT 2
+
 
 class Memory : public SyncBlock < MemAccess >  
 {
@@ -209,16 +211,21 @@ public:
             this->pipe_delay_.front().write() = MemAccess();
         }
         
+        int port_id = -1;
         for (auto & cmd :  this->pipe_delay_.back().write().port)
         {
+            port_id++;
             assert(cmd.op == OP::ST || cmd.op == OP::LD || cmd.op == OP::INVALID);
-            auto & trace = IT[cmd.instruction.as_string()];
-            trace.cycle_executed_end = CLOCK + 1;
             if (cmd.op == OP::ST)
             {
                 assert(cmd.VQS.second.is_ready() && cmd.instruction.op != 0x7 );
                 this->mem_cache_.at(cmd.instruction.imm) = cmd.VQS.second.val();
                 cmd.op = OP::DONE;
+                if (port_id == DATA_PORT) //only Non-Fetch related instruction are traced
+                {
+                    auto & trace = IT[cmd.pc];
+                    trace.cycle_executed_end = CLOCK + 1;
+                }
             }
 
             if (cmd.op == OP::LD)
@@ -226,6 +233,11 @@ public:
                 assert(cmd.instruction.op != 0x7);
                 cmd.op = OP::DONE;
                 cmd.result.as_int = this->mem_cache_.at(cmd.instruction.imm);
+                if (port_id == DATA_PORT) //only Non-Fetch related instruction are traced
+                {
+                    auto & trace = IT[cmd.pc];
+                    trace.cycle_executed_end = CLOCK + 1;
+                }
             }
         }
 
