@@ -1,5 +1,9 @@
 
 #pragma once
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
 
 
 enum OP
@@ -34,6 +38,16 @@ struct Instruction
     , op(0x7) // INVALID
     , reserved(0x0)
     {}
+
+
+    std::string as_string() const 
+    {
+        std::stringstream stream;
+        stream  << "0x" 
+                << std::setfill ('0') << std::setw(sizeof(unsigned int)*2) 
+                << std::hex << *(uint32_t*)this;
+        return stream.str();
+    }
 
 } __attribute__((packed));
 

@@ -8,6 +8,7 @@
 #include <sstream>
 #include <vector>
 #include <stdint.h>
+#include "trace.h"
 
 
 class BaseFunction : public SyncBlock <FuncTableEntry>
@@ -57,6 +58,11 @@ public:
         if (time > 0 )
         {
             time--;
+            if (time == 0)
+            {
+                auto & trace = IT[cmd.instruction.as_string()];
+                trace.cycle_executed_end = CLOCK;
+            }
         }
     }
 
@@ -206,18 +212,20 @@ public:
         for (auto & cmd :  this->pipe_delay_.back().write().port)
         {
             assert(cmd.op == OP::ST || cmd.op == OP::LD || cmd.op == OP::INVALID);
+            auto & trace = IT[cmd.instruction.as_string()];
+            trace.cycle_executed_end = CLOCK + 1;
             if (cmd.op == OP::ST)
             {
-                assert(cmd.VQS.second.is_ready() && cmd.imm != -1 );
-                this->mem_cache_.at(cmd.imm) = cmd.VQS.second.val();
+                assert(cmd.VQS.second.is_ready() && cmd.instruction.op != 0x7 );
+                this->mem_cache_.at(cmd.instruction.imm) = cmd.VQS.second.val();
                 cmd.op = OP::DONE;
             }
 
             if (cmd.op == OP::LD)
             {
-                assert(cmd.dest != -1 && cmd.imm != -1);
+                assert(cmd.instruction.op != 0x7);
                 cmd.op = OP::DONE;
-                cmd.result.as_int = this->mem_cache_.at(cmd.imm);
+                cmd.result.as_int = this->mem_cache_.at(cmd.instruction.imm);
             }
         }
 
