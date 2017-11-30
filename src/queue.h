@@ -16,7 +16,7 @@ class Queue : public SyncBlock< std::list< std::pair< std::string , T >  > >
     std::list< std::pair<std::string , T> > update_;
     std::pair< std::string , T >            null = std::make_pair("",T());
     int size ;
-    int id  = 0;
+    int id  = -1;
 
 
 public:
@@ -76,7 +76,7 @@ class AsyncQueue
     std::list< T > queue_;
     T                                       null = T();
     int size ;
-    int id = 0;
+    int id = -1;
 
 
 public:

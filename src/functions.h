@@ -61,7 +61,7 @@ public:
             if (time == 0)
             {
                 auto & trace = IT[cmd.pc];
-                trace.cycle_executed_end = CLOCK;
+                trace.cycle_executed_end = CLOCK + 1;
             }
         }
     }
@@ -80,17 +80,15 @@ class Add : public BaseFunction
         assert(cmd.VQS.first.is_ready() && cmd.VQS.second.is_ready());
         if (cmd.op == OP::ADD)
         {
+            this->result = cmd;
             this->result.result.as_float = cmd.VQS.first.val() + cmd.VQS.second.val() ;
-            this->result.creator = cmd.creator;
-            this->result.tag = cmd.tag;
             this->result.op = OP::DONE;
             return this->result;
         }
         if (cmd.op == OP::SUB)
         {
+            this->result = cmd;
             this->result.result.as_float = cmd.VQS.first.val() - cmd.VQS.second.val() ;
-            this->result.creator = cmd.creator;
-            this->result.tag = cmd.tag;
             this->result.op = OP::DONE;
             return this->result;
         }
@@ -108,8 +106,7 @@ class Mult : public BaseFunction
     {
         assert(cmd.op == OP::MULT);
         assert(cmd.VQS.first.is_ready() && cmd.VQS.second.is_ready());
-        this->result.creator = cmd.creator;
-        this->result.tag = cmd.tag;
+        this->result = cmd;
         this->result.result.as_float = cmd.VQS.first.val() * cmd.VQS.second.val();
         this->result.op = OP::DONE;
         return this->result;
@@ -124,9 +121,8 @@ class Div : public BaseFunction
     {
         assert(cmd.op == OP::DIV);
         assert(cmd.VQS.first.is_ready() && cmd.VQS.second.is_ready());
-        this->result.creator = cmd.creator;
+        this->result = cmd;
         this->result.result.as_float = cmd.VQS.first.val() / cmd.VQS.second.val();
-        this->result.tag = cmd.tag;
         this->result.op = OP::DONE;
         return this->result;
     }

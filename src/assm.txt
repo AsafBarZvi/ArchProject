@@ -16,6 +16,17 @@ NOPE    0       0       0       0
 NOPE    0       0       0       0
 NOPE    0       0       0       0
 NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
 HALT    0       0       0       0
 VALUE   2.0
 VALUE   2.0

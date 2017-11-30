@@ -49,7 +49,8 @@ void resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , std::vector< std
                      cmd = req;
                      cmd.creator = &req;
                      auto & trace = IT[req.pc];
-                     trace.cycle_executed_start = CLOCK; 
+                     trace.cycle_executed_start = CLOCK;
+                     break;
                  }
              }
          }
@@ -60,7 +61,7 @@ bool resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , MemAccess & mem_
 {
     for (auto & req : reservatory.get_queue())
     {
-         if (!req.busy && req.VQS.first.is_ready() && req.VQS.second.is_ready())
+         if (!req.busy)
          {
              req.busy = true;
              mem_write.port[2] = req;
@@ -127,8 +128,6 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
                                 const MemAccess&                                  mem_read)
 {
 
-    //TODO reservatory  not pushed for current cycle
-    
     std::list< std::vector< std::shared_ptr<BaseFunction> > * > units = {&adders , &multipliers , &dividers };
     for (auto & unit_group : units)
     {
@@ -139,7 +138,7 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
             if (out.op == OP::DONE)
             {
                 auto & trace  = IT[out.pc];
-                trace.cycle_write_cdb = CLOCK;
+                trace.cycle_write_cdb = CLOCK + 1;
                 updateUnit(function_unit_tables , out , register_file);
                 break; // TODO Single CDB per functional unit group , .i.e. unit is busy while CDB is not available 
 
@@ -153,7 +152,7 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
     if (out.op == OP::DONE)
     {
         auto & trace  = IT[out.pc];
-        trace.cycle_write_cdb = CLOCK;
+        trace.cycle_write_cdb = CLOCK + 1; 
         updateUnit(function_unit_tables, out , register_file);
         assert(!register_file.write().at(mem_read.port[2].instruction.dst).is_ready() ||
                register_file.write().at(mem_read.port[2].instruction.dst).val() == out.result.as_float);
@@ -174,29 +173,23 @@ int main(int argc , char ** argv)
    
    //TODO assuming AsyncQueue for instruction queue
    AsyncQueue<std::pair<int , Instruction> > inst_queue(16);
-   //blocks.push_back(&inst_queue);
 
    AsyncQueue<FuncTableEntry> store_buffer(mem_nr_store_buffer);
-   //blocks.push_back(&store_buffer);
    function_unit_tables.push_back(&store_buffer);
    
    AsyncQueue<FuncTableEntry> load_buffer(mem_nr_load_buffer);
-   //blocks.push_back(&load_buffer);
    function_unit_tables.push_back(&load_buffer);
 
    Register register_file(16);
    blocks.push_back(&register_file);
 
    AsyncQueue<FuncTableEntry>  adders_reservatory(add_nr_reservation);
-   //blocks.push_back(&adders_reservatory);
    function_unit_tables.push_back(&adders_reservatory);
 
    AsyncQueue<FuncTableEntry>  mult_reservatory(mul_nr_reservation);
-   //blocks.push_back(&mult_reservatory);
    function_unit_tables.push_back(&mult_reservatory);
 
    AsyncQueue<FuncTableEntry>  div_reservatory(div_nr_reservation);
-   //blocks.push_back(&div_reservatory);
    function_unit_tables.push_back(&div_reservatory);
 
 
@@ -294,10 +287,7 @@ int main(int argc , char ** argv)
             }
 
             if (inst.op == OP::NOPE)
-            {
                 inst_queue.pop();
-                break;
-            }
 
             bool available_reservatory = ( (inst.op == OP::ADD || inst.op == OP::SUB) && (!adders_reservatory.is_full()) ) ||
                                          ( inst.op  == OP::MULT && !mult_reservatory.is_full() )                           ||
@@ -311,6 +301,7 @@ int main(int argc , char ** argv)
                 tentry.busy = false;
                 tentry.instruction = inst;
                 tentry.op   = OP(inst.op);
+                tentry.pc   = inst_pair.first;
                 tentry.VQS.first = register_file.read().at(inst.src0);
                 tentry.VQS.second = register_file.read().at(inst.src1);
                 if       (inst.op == OP::ADD || inst.op == OP::SUB)
