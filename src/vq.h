@@ -2,16 +2,31 @@
 #pragma once
 
 #include <string>
+#include "sync_block.h"
 
-class VQ
+class VQ : public SyncBlock < std::pair<std::string , float> > 
 {
-    std::string tag_     = "none";
-    float       value_   = -1.0;
+    std::pair <std::string , float > current;
+    std::pair <std::string , float > update;
+
+    const std::pair <std::string , float >& read() { return this->current; } 
+    std::pair <std::string , float >& write()      { return this->update; }
 
 public:
-    bool is_ready() const { return tag_.empty();}
-    void set_tag(const std::string & ntag) { tag_ = ntag ; value_ = -1;}
-    void set_val(const float val) { tag_ = "" ; value_ = val; }
-    float val() const { return value_; }
-    const std::string& tag() const {return tag_;}
+
+    VQ()
+    {
+        this->current.first  = "none";
+        this->current.second = -1;
+        this->update.first  = "none";
+        this->update.second = -1;
+    }
+    
+    
+    void clock() { this->current = this->update; }
+    bool is_ready() const { return const_cast<VQ*>(this)->read().first.empty();}
+    void set_tag(const std::string & ntag) { this->write().first = ntag ; this->write().second = -1;}
+    void set_val(const float val) { this->write().first = ""; this->write().second = val; }
+    float val() const { return const_cast<VQ*>(this)->read().second; }
+    const std::string& tag() const {return const_cast<VQ*>(this)->read().first;}
 };

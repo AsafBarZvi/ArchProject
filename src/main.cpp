@@ -38,7 +38,7 @@ void resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , std::vector< std
 {
     for (auto & req : reservatory.get_queue())
     {
-         if (!req.busy && register_file.read().at(req.instruction.src0).is_ready() && register_file.read().at(req.instruction.src1).is_ready())
+         if (!req.busy &&  req.VQS.first.is_ready() && req.VQS.second.is_ready())
          {
              for (auto & unit : units)
              {
@@ -383,7 +383,21 @@ int main(int argc , char ** argv)
        resevatoryToUnit(load_buffer,mem_write) || resevatoryToUnit(store_buffer,mem_write);    //Always tring to load and then store
 
 
+        
+       /*
+        * Do clock to all 
+        * Clocked units
+        */
+
        std::for_each(blocks.begin() , blocks.end() , []( SyncBlockBase* b) { b->clock(); } );
+       for (auto & ftable : function_unit_tables)
+       {
+           for (auto & req : ftable->get_queue())
+           {
+                req.VQS.first.clock();
+                req.VQS.second.clock();
+           }
+       }
 
    }
 
