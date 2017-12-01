@@ -34,6 +34,7 @@ const int mem_delay    = 2;
 
 
 
+// ----------------------------------------------------------------------------------------------------------------------- //
 void resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , std::vector< std::shared_ptr<BaseFunction> > & units , Register& register_file)
 {
     for (auto & req : reservatory.get_queue())
@@ -56,7 +57,7 @@ void resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , std::vector< std
          }
     }
 }
-
+// ----------------------------------------------------------------------------------------------------------------------- //
 bool resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , MemAccess & mem_write)
 {
     for (auto & req : reservatory.get_queue())
@@ -73,9 +74,7 @@ bool resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , MemAccess & mem_
     }
     return false;
 }
-
-
-
+// ----------------------------------------------------------------------------------------------------------------------- //
 void updateUnit(std::list< AsyncQueue<FuncTableEntry> * > &     function_unit_tables,
                 const FuncTableEntry &                          out,
                 Register &                                      register_file)
@@ -118,8 +117,7 @@ void updateUnit(std::list< AsyncQueue<FuncTableEntry> * > &     function_unit_ta
             reg.set_val(out.result.as_float);
     }
 }
-
-
+// ----------------------------------------------------------------------------------------------------------------------- //
 void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &       function_unit_tables ,
                                 std::vector< std::shared_ptr<BaseFunction> > &    adders,
                                 std::vector< std::shared_ptr<BaseFunction> > &    multipliers,
@@ -159,14 +157,13 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
     }
 
 }
-
-
+// ----------------------------------------------------------------------------------------------------------------------- //
 int main(int argc , char ** argv)
 {
+   // ----------------------------------------------------------------------------------------------------------------------- //
    /*
     * Init Units
     */
-
 
    std::list< SyncBlockBase* > blocks;
    std::list< AsyncQueue<FuncTableEntry> * > function_unit_tables;
@@ -221,12 +218,13 @@ int main(int argc , char ** argv)
 
    Memory mem_unit = Memory("memin.txt" , mem_delay);
    blocks.push_back(&mem_unit);
+   // ----------------------------------------------------------------------------------------------------------------------- //
 
    int pc = 0;
    while (true)
    {
        CLOCK++;
-       // ---------------------------------- //
+       // ----------------------------------------------------------------------------------------------------------------------- //
        /*
         * FETCH
         */
@@ -269,7 +267,7 @@ int main(int argc , char ** argv)
            trace.inst_hex = decode(mem_read.port[1].result.as_int).as_string();
        }
 
-       // ---------------------------------- //
+       // ----------------------------------------------------------------------------------------------------------------------- //
        
        /*
         * ISSUE
@@ -387,6 +385,7 @@ int main(int argc , char ** argv)
        resevatoryToUnit(load_buffer,mem_write) || resevatoryToUnit(store_buffer,mem_write);    //Always tring to load and then store
 
 
+       // ----------------------------------------------------------------------------------------------------------------------- //
         
        /*
         * Do clock to all 
