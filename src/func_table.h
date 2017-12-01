@@ -5,9 +5,9 @@
 #include "defines.h"
 #include <stdint.h>
 #include <memory>
+#include "sync_block.h"
 
-
-struct FuncTableEntry
+struct FuncTableEntry : public SyncBlockBase
 {
     int  time = 0;
     bool busy = false;
@@ -30,6 +30,12 @@ struct FuncTableEntry
     FuncTableEntry()
     {
         this->result.as_int = 0;
+    }
+
+    void clock()
+    {
+        this->VQS.first.clock();
+        this->VQS.second.clock();
     }
 
 };

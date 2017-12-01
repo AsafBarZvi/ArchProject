@@ -174,24 +174,28 @@ int main(int argc , char ** argv)
    //TODO assuming AsyncQueue for instruction queue
    AsyncQueue<std::pair<int , Instruction> > inst_queue(16);
 
-   AsyncQueue<FuncTableEntry> store_buffer(mem_nr_store_buffer);
+   Queue<FuncTableEntry> store_buffer(mem_nr_store_buffer);
    function_unit_tables.push_back(&store_buffer);
+   blocks.push_back(&store_buffer);
    
-   AsyncQueue<FuncTableEntry> load_buffer(mem_nr_load_buffer);
+   Queue<FuncTableEntry> load_buffer(mem_nr_load_buffer);
    function_unit_tables.push_back(&load_buffer);
+   blocks.push_back(&load_buffer);
 
    Register register_file(16);
    blocks.push_back(&register_file);
 
-   AsyncQueue<FuncTableEntry>  adders_reservatory(add_nr_reservation);
+   Queue<FuncTableEntry>  adders_reservatory(add_nr_reservation);
    function_unit_tables.push_back(&adders_reservatory);
+   blocks.push_back(&adders_reservatory);
 
-   AsyncQueue<FuncTableEntry>  mult_reservatory(mul_nr_reservation);
+   Queue<FuncTableEntry>  mult_reservatory(mul_nr_reservation);
    function_unit_tables.push_back(&mult_reservatory);
+   blocks.push_back(&mult_reservatory);
 
-   AsyncQueue<FuncTableEntry>  div_reservatory(div_nr_reservation);
+   Queue<FuncTableEntry>  div_reservatory(div_nr_reservation);
    function_unit_tables.push_back(&div_reservatory);
-
+   blocks.push_back(&div_reservatory);
 
    std::vector< std::shared_ptr<BaseFunction> >       adders;
    for (int i = 0 ; i < add_nr_units ; i++)
@@ -390,14 +394,6 @@ int main(int argc , char ** argv)
         */
 
        std::for_each(blocks.begin() , blocks.end() , []( SyncBlockBase* b) { b->clock(); } );
-       for (auto & ftable : function_unit_tables)
-       {
-           for (auto & req : ftable->get_queue())
-           {
-                req.VQS.first.clock();
-                req.VQS.second.clock();
-           }
-       }
 
    }
 
