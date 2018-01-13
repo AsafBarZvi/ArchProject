@@ -1,6 +1,7 @@
 import struct
 import sys
 import argparse
+import ipdb
 
 parser = argparse.ArgumentParser("assm to hex converter")
 
@@ -23,21 +24,21 @@ for assm in assm_lines:
     assm_parts = assm.split()
     op_code = assm_parts[0]
     if   (op_code.upper() == "LD"):
-           hex_line.append("00")
+        hex_line.append("00")
     elif (op_code.upper() == "ST"):
-           hex_line.append("01")
+        hex_line.append("01")
     elif (op_code.upper() == "ADD"):
-           hex_line.append("02")
+        hex_line.append("02")
     elif (op_code.upper() == "SUB"):
-           hex_line.append("03")
+        hex_line.append("03")
     elif (op_code.upper() == "MULT"):
-           hex_line.append("04")
+        hex_line.append("04")
     elif (op_code.upper() == "DIV"):
-           hex_line.append("05")
+        hex_line.append("05")
     elif (op_code.upper() == "HALT"):
-           hex_line.append("06")
+        hex_line.append("06")
     elif (op_code.upper() == "NOPE"):
-           hex_line.append("09")
+        hex_line.append("09")
     elif (op_code.upper() == "VALUE"):
         hex_out.append(float_to_hex(float(assm_parts[1])))
         continue

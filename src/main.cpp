@@ -16,22 +16,9 @@
 #include "trace.h"
 
 
+const int INST_UNIT_SIZE  = 16; // Size of instruction unit queue
+const int REGISTERS_NUM   = 16; // Number of FP registers
 const int NUM_ISSUES      = 2; // NOTE: was defined to be 2, non-configurable in project
-
-const int add_nr_reservation = 3;
-const int mul_nr_reservation = 2;
-const int div_nr_reservation = 1;
-const int add_nr_units = 3;
-const int mul_nr_units = 2;
-const int div_nr_units = 1;
-const int add_delay    = 2;
-const int mult_delay   = 10;
-const int div_delay    = 12;
-const int mem_nr_store_buffer = 1;
-const int mem_nr_load_buffer  = 3;
-const int mem_delay    = 2;
-
-
 
 
 // ----------------------------------------------------------------------------------------------------------------------- //
@@ -138,14 +125,14 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
                 auto & trace  = IT[out.pc];
                 trace.cycle_write_cdb = CLOCK + 1;
                 updateUnit(function_unit_tables , out , register_file);
-                break; // TODO Single CDB per functional unit group , .i.e. unit is busy while CDB is not available 
+                break; // Single CDB per functional unit group , .i.e. unit is busy while CDB is not available 
 
             }
         }
     }
 
 
-    // TODO Assuming mem data has a dedicated CDB, so arbitration on mem out data 
+    // Assuming mem data has a dedicated CDB, so arbitration on mem out data 
     auto & out = mem_read.port[2];
     if (out.op == OP::DONE)
     {
@@ -160,26 +147,73 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
 // ----------------------------------------------------------------------------------------------------------------------- //
 int main(int argc , char ** argv)
 {
-   // ----------------------------------------------------------------------------------------------------------------------- //
-   /*
-    * Init Units
-    */
+    // Check input args
+    std::vector< std::string > inputFiles;
+    if (argc == 7)
+    {
+        for (int i=1 ; i < argc ; i++)
+            inputFiles.push_back(argv[i]);
+    }
+    else
+    {
+        std::cout << "Incorrect input arguments!\n" 
+            << "Usage:./sim cfg.txt memin.txt memout.txt regout.txt traceinst.txt tracecdb.txt\n";
+        exit(1);
+    }
+
+    // Read cfg.txt 
+    int add_nr_units;
+    int mul_nr_units;
+    int div_nr_units;
+    int add_nr_reservation;
+    int mul_nr_reservation;
+    int div_nr_reservation;
+    int add_delay;
+    int mul_delay;
+    int div_delay;
+    int mem_delay;
+    int mem_nr_load_buffers;
+    int mem_nr_store_buffers;
+
+    std::ifstream cfgFile(inputFiles[0]);
+    if (!cfgFile.is_open())
+        throw std::runtime_error("unable to open file " + inputFiles[0]);
+    
+    std::string str;
+
+    cfgFile >> str >> str >> add_nr_units;
+    cfgFile >> str >> str >> mul_nr_units;
+    cfgFile >> str >> str >> div_nr_units;
+    cfgFile >> str >> str >> add_nr_reservation;
+    cfgFile >> str >> str >> mul_nr_reservation;
+    cfgFile >> str >> str >> div_nr_reservation;
+    cfgFile >> str >> str >> add_delay;
+    cfgFile >> str >> str >> mul_delay;
+    cfgFile >> str >> str >> div_delay;
+    cfgFile >> str >> str >> mem_delay;
+    cfgFile >> str >> str >> mem_nr_load_buffers;
+    cfgFile >> str >> str >> mem_nr_store_buffers;
+
+    // ----------------------------------------------------------------------------------------------------------------------- //
+    /*
+     *  Init Units
+     */
 
    std::list< SyncBlockBase* > blocks;
    std::list< AsyncQueue<FuncTableEntry> * > function_unit_tables;
    
-   //TODO assuming AsyncQueue for instruction queue
-   AsyncQueue<std::pair<int , Instruction> > inst_queue(16);
+   // Assuming AsyncQueue for instruction queue
+   AsyncQueue<std::pair<int , Instruction> > inst_queue(INST_UNIT_SIZE);
 
-   Queue<FuncTableEntry> store_buffer(mem_nr_store_buffer);
+   Queue<FuncTableEntry> store_buffer(mem_nr_store_buffers);
    function_unit_tables.push_back(&store_buffer);
    blocks.push_back(&store_buffer);
    
-   Queue<FuncTableEntry> load_buffer(mem_nr_load_buffer);
+   Queue<FuncTableEntry> load_buffer(mem_nr_load_buffers);
    function_unit_tables.push_back(&load_buffer);
    blocks.push_back(&load_buffer);
 
-   Register register_file(16);
+   Register register_file(REGISTERS_NUM);
    blocks.push_back(&register_file);
 
    Queue<FuncTableEntry>  adders_reservatory(add_nr_reservation);
@@ -205,7 +239,7 @@ int main(int argc , char ** argv)
    std::vector< std::shared_ptr<BaseFunction> >      multipliers;
    for (int i = 0 ; i < mul_nr_units ; i++)
    {
-       multipliers.push_back(std::shared_ptr<BaseFunction>( new Mult(mult_delay)) );
+       multipliers.push_back(std::shared_ptr<BaseFunction>( new Mult(mul_delay)) );
        blocks.push_back(multipliers.back().get());
    }
 
@@ -216,7 +250,7 @@ int main(int argc , char ** argv)
        blocks.push_back(dividers.back().get());
    }
 
-   Memory mem_unit = Memory("memin.txt" , mem_delay);
+   Memory mem_unit = Memory(inputFiles[1] , mem_delay);
    blocks.push_back(&mem_unit);
    // ----------------------------------------------------------------------------------------------------------------------- //
 
@@ -229,8 +263,8 @@ int main(int argc , char ** argv)
         * FETCH
         */
        auto & mem_write = mem_unit.write();
-       if (!inst_queue.is_half_full()) 
-       {    // TODO is this logic true ? 
+       if (!inst_queue.is_half_full())
+       {
             // FETCH 0
             mem_write.port[0].op = OP::LD;
             mem_write.port[0].instruction.dst = 0;
@@ -249,7 +283,7 @@ int main(int argc , char ** argv)
 
        auto & mem_read = mem_unit.read();
        assert(!inst_queue.is_full());
-       // TODO assuming write to instruction queue is not through CDB, 
+       // Assuming write to instruction queue is not through CDB, 
        // i.e. every clock DATA can be written to register file
        if (mem_read.port[0].op == OP::DONE)
        {
@@ -297,8 +331,7 @@ int main(int argc , char ** argv)
                                          ( inst.op  == OP::ST   && !store_buffer.is_full()     )                           ||
                                          ( inst.op  == OP::LD   && !load_buffer.is_full()      )                           ;
 
-            /* TODO NOTE THIS NEW RULE NOT COVERD IN CLASS !!!
-             * Check if not accumulator, dst == src and dst is pending result, in that case must wait for result,
+            /* Check if not accumulator, dst == src and dst is pending result, in that case must wait for result,
              * since re-tagging dst with cause deadlock, infinitely waiting for src
              */
             bool is_accumulator       = (( inst.dst == inst.src0 || inst.dst == inst.src1 ) & !register_file.write().at(inst.dst).is_ready());
@@ -310,7 +343,7 @@ int main(int argc , char ** argv)
                 tentry.instruction = inst;
                 tentry.op   = OP(inst.op);
                 tentry.pc   = inst_pair.first;
-                tentry.VQS.first = register_file.write().at(inst.src0);         // TODO changed .read to .write, need most updated value of reg in ISSUE 2
+                tentry.VQS.first = register_file.write().at(inst.src0);         
                 tentry.VQS.second = register_file.write().at(inst.src1);
                 if       (inst.op == OP::ADD || inst.op == OP::SUB)
                 {
