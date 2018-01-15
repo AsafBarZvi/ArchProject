@@ -10,4 +10,3 @@ div_delay = 20
 mem_delay = 7
 mem_nr_load_buffers = 2
 mem_nr_store_buffers = 2
-

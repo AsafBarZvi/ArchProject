@@ -1,0 +1,258 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ADD	defines.h	/^    ADD,$/;"	e	enum:OP
+Add	functions.h	/^class Add : public BaseFunction$/;"	c	inherits:BaseFunction
+Add::op	functions.h	/^    const FuncTableEntry& op()$/;"	f	class:Add	access:private	signature:()
+AsyncQueue	queue.h	/^    AsyncQueue(int size)$/;"	f	class:AsyncQueue	access:public	signature:(int size)
+AsyncQueue	queue.h	/^class AsyncQueue $/;"	c
+AsyncQueue::AsyncQueue	queue.h	/^    AsyncQueue(int size)$/;"	f	class:AsyncQueue	access:public	signature:(int size)
+AsyncQueue::get_queue	queue.h	/^    std::list< T > &  get_queue() { return this->queue_; }$/;"	f	class:AsyncQueue	access:public	signature:()
+AsyncQueue::id	queue.h	/^    int id = -1;$/;"	m	class:AsyncQueue	access:protected
+AsyncQueue::is_empt	queue.h	/^    bool is_empt() {return this->queue_.size() == 0 ; }$/;"	f	class:AsyncQueue	access:public	signature:()
+AsyncQueue::is_full	queue.h	/^    bool is_full() {return this->queue_.size() == size ; }$/;"	f	class:AsyncQueue	access:public	signature:()
+AsyncQueue::is_half_full	queue.h	/^    bool is_half_full() { return this->queue_.size() > size\/2 ;}$/;"	f	class:AsyncQueue	access:public	signature:()
+AsyncQueue::null	queue.h	/^    T                                       null = T();$/;"	m	class:AsyncQueue	access:protected
+AsyncQueue::peek	queue.h	/^    T & peek()$/;"	f	class:AsyncQueue	access:public	signature:()
+AsyncQueue::pop	queue.h	/^    void pop()$/;"	f	class:AsyncQueue	access:public	signature:()
+AsyncQueue::push	queue.h	/^    std::string push(const T& inst , const std::string & tag)$/;"	f	class:AsyncQueue	access:public	signature:(const T& inst , const std::string & tag)
+AsyncQueue::push	queue.h	/^    void push(const T& inst)$/;"	f	class:AsyncQueue	access:public	signature:(const T& inst)
+AsyncQueue::queue_	queue.h	/^    std::list< T > queue_;$/;"	m	class:AsyncQueue	access:protected
+AsyncQueue::size	queue.h	/^    int size ;$/;"	m	class:AsyncQueue	access:protected
+BaseFunction	functions.h	/^    BaseFunction(int delay)$/;"	f	class:BaseFunction	access:public	signature:(int delay)
+BaseFunction	functions.h	/^class BaseFunction : public SyncBlock <FuncTableEntry>$/;"	c	inherits:SyncBlock
+BaseFunction::BaseFunction	functions.h	/^    BaseFunction(int delay)$/;"	f	class:BaseFunction	access:public	signature:(int delay)
+BaseFunction::clock	functions.h	/^    virtual void clock()$/;"	f	class:BaseFunction	access:public	signature:()
+BaseFunction::cmd	functions.h	/^    FuncTableEntry cmd;$/;"	m	class:BaseFunction	access:protected
+BaseFunction::delay	functions.h	/^    int delay;$/;"	m	class:BaseFunction	access:protected
+BaseFunction::is_busy	functions.h	/^    virtual bool is_busy() { return time != -1;}$/;"	f	class:BaseFunction	access:public	signature:()
+BaseFunction::new_cmd	functions.h	/^    FuncTableEntry new_cmd;$/;"	m	class:BaseFunction	access:protected
+BaseFunction::null	functions.h	/^    FuncTableEntry null;$/;"	m	class:BaseFunction	access:protected
+BaseFunction::op	functions.h	/^    virtual const FuncTableEntry& op() = 0;$/;"	p	class:BaseFunction	access:protected	signature:()
+BaseFunction::read	functions.h	/^    virtual const FuncTableEntry& read()$/;"	f	class:BaseFunction	access:public	signature:()
+BaseFunction::result	functions.h	/^    FuncTableEntry result;$/;"	m	class:BaseFunction	access:protected
+BaseFunction::time	functions.h	/^    int time = -1;$/;"	m	class:BaseFunction	access:protected
+BaseFunction::write	functions.h	/^    virtual FuncTableEntry&  write()$/;"	f	class:BaseFunction	access:public	signature:()
+BaseFunction::~BaseFunction	functions.h	/^    virtual ~BaseFunction() {}$/;"	f	class:BaseFunction	access:public	signature:()
+CLOCK	trace.cpp	/^int CLOCK = -1;$/;"	v
+DATA_PORT	functions.h	144;"	d
+DIV	defines.h	/^    DIV,$/;"	e	enum:OP
+DONE	defines.h	/^    DONE,$/;"	e	enum:OP
+Div	functions.h	/^class Div : public BaseFunction$/;"	c	inherits:BaseFunction
+Div::op	functions.h	/^    const FuncTableEntry& op()$/;"	f	class:Div	access:private	signature:()
+FuncTableEntry	func_table.h	/^    FuncTableEntry()$/;"	f	struct:FuncTableEntry	access:public	signature:()
+FuncTableEntry	func_table.h	/^struct FuncTableEntry : public SyncBlockBase$/;"	s	inherits:SyncBlockBase
+FuncTableEntry::FuncTableEntry	func_table.h	/^    FuncTableEntry()$/;"	f	struct:FuncTableEntry	access:public	signature:()
+FuncTableEntry::VQS	func_table.h	/^    std::pair<VQ , VQ> VQS;$/;"	m	struct:FuncTableEntry	access:public
+FuncTableEntry::busy	func_table.h	/^    bool busy = false;$/;"	m	struct:FuncTableEntry	access:public
+FuncTableEntry::clock	func_table.h	/^    void clock()$/;"	f	struct:FuncTableEntry	access:public	signature:()
+FuncTableEntry::creator	func_table.h	/^    FuncTableEntry* creator = NULL;$/;"	m	struct:FuncTableEntry	access:public
+FuncTableEntry::instruction	func_table.h	/^    Instruction instruction;$/;"	m	struct:FuncTableEntry	access:public
+FuncTableEntry::op	func_table.h	/^    OP   op   = OP::INVALID;$/;"	m	struct:FuncTableEntry	access:public
+FuncTableEntry::pc	func_table.h	/^    int  pc   = -1;$/;"	m	struct:FuncTableEntry	access:public
+FuncTableEntry::result	func_table.h	/^    } result;$/;"	m	struct:FuncTableEntry	typeref:union:FuncTableEntry::result_t	access:public
+FuncTableEntry::result_t	func_table.h	/^    union result_t$/;"	u	struct:FuncTableEntry	access:public
+FuncTableEntry::result_t::as_float	func_table.h	/^        float    as_float;$/;"	m	union:FuncTableEntry::result_t	access:public
+FuncTableEntry::result_t::as_int	func_table.h	/^        uint32_t as_int;$/;"	m	union:FuncTableEntry::result_t	access:public
+FuncTableEntry::tag	func_table.h	/^    std::string tag = "";$/;"	m	struct:FuncTableEntry	access:public
+FuncTableEntry::time	func_table.h	/^    int  time = 0;$/;"	m	struct:FuncTableEntry	access:public
+HALT	defines.h	/^    HALT,$/;"	e	enum:OP
+INST_UNIT_SIZE	main.cpp	/^const int INST_UNIT_SIZE  = 16; \/\/ Size of instruction unit queue$/;"	v
+INVALID	defines.h	/^    INVALID,$/;"	e	enum:OP
+IT	trace.h	22;"	d
+Instruction	defines.h	/^    Instruction()$/;"	f	struct:Instruction	access:public	signature:()
+Instruction	defines.h	/^struct Instruction$/;"	s
+Instruction::Instruction	defines.h	/^    Instruction()$/;"	f	struct:Instruction	access:public	signature:()
+Instruction::as_string	defines.h	/^    std::string as_string() const $/;"	f	struct:Instruction	access:public	signature:() const
+Instruction::dst	defines.h	/^    unsigned int dst  : 4;$/;"	m	struct:Instruction	access:public
+Instruction::imm	defines.h	/^    unsigned int imm  : 12;$/;"	m	struct:Instruction	access:public
+Instruction::op	defines.h	/^    unsigned int op   : 4;$/;"	m	struct:Instruction	access:public
+Instruction::reserved	defines.h	/^    unsigned int reserved : 4;$/;"	m	struct:Instruction	access:public
+Instruction::src0	defines.h	/^    unsigned int src0 : 4;$/;"	m	struct:Instruction	access:public
+Instruction::src1	defines.h	/^    unsigned int src1 : 4;$/;"	m	struct:Instruction	access:public
+InstructionTrace	trace.cpp	/^std::map < int , TraceEntry> InstructionTrace;$/;"	v
+LD	defines.h	/^    LD,$/;"	e	enum:OP
+MULT	defines.h	/^    MULT,$/;"	e	enum:OP
+MemAccess	functions.h	/^    MemAccess()$/;"	f	struct:MemAccess	access:public	signature:()
+MemAccess	functions.h	/^struct MemAccess$/;"	s
+MemAccess::MemAccess	functions.h	/^    MemAccess()$/;"	f	struct:MemAccess	access:public	signature:()
+MemAccess::port	functions.h	/^    std::vector<FuncTableEntry> port;$/;"	m	struct:MemAccess	access:public
+Memory	functions.h	/^    Memory(const std::string&  mem_file , int delay)$/;"	f	class:Memory	access:public	signature:(const std::string& mem_file , int delay)
+Memory	functions.h	/^class Memory : public SyncBlock < MemAccess >  $/;"	c	inherits:SyncBlock
+Memory::Memory	functions.h	/^    Memory(const std::string&  mem_file , int delay)$/;"	f	class:Memory	access:public	signature:(const std::string& mem_file , int delay)
+Memory::PipeDelay	functions.h	/^    class PipeDelay : public SyncBlock < MemAccess >$/;"	c	class:Memory	inherits:SyncBlock	access:private
+Memory::PipeDelay::clock	functions.h	/^        void clock() { this->current_ = this->update_ ; }$/;"	f	class:Memory::PipeDelay	access:public	signature:()
+Memory::PipeDelay::current_	functions.h	/^        MemAccess current_;$/;"	m	class:Memory::PipeDelay	access:private
+Memory::PipeDelay::read	functions.h	/^        const MemAccess& read() { return current_;}$/;"	f	class:Memory::PipeDelay	access:public	signature:()
+Memory::PipeDelay::update_	functions.h	/^        MemAccess update_;$/;"	m	class:Memory::PipeDelay	access:private
+Memory::PipeDelay::write	functions.h	/^        MemAccess& write() { return update_;}$/;"	f	class:Memory::PipeDelay	access:public	signature:()
+Memory::clock	functions.h	/^    void clock()$/;"	f	class:Memory	access:public	signature:()
+Memory::is_busy	functions.h	/^    bool is_busy() { return this->new_request; }$/;"	f	class:Memory	access:public	signature:()
+Memory::mem_cache_	functions.h	/^    std::vector<uint32_t>   mem_cache_;$/;"	m	class:Memory	access:private
+Memory::new_request	functions.h	/^    bool                    new_request = false;$/;"	m	class:Memory	access:private
+Memory::pipe_delay_	functions.h	/^    std::vector<PipeDelay>  pipe_delay_;$/;"	m	class:Memory	access:private
+Memory::read	functions.h	/^    const MemAccess& read() {return this->pipe_delay_.back().read(); }$/;"	f	class:Memory	access:public	signature:()
+Memory::write	functions.h	/^    MemAccess& write() { this->new_request = true ; this->pipe_delay_.front().write() = MemAccess() ; return this->pipe_delay_.front().write(); }$/;"	f	class:Memory	access:public	signature:()
+Memory::~Memory	functions.h	/^    virtual ~Memory() {}$/;"	f	class:Memory	access:public	signature:()
+Mult	functions.h	/^class Mult : public BaseFunction$/;"	c	inherits:BaseFunction
+Mult::op	functions.h	/^    const FuncTableEntry& op()$/;"	f	class:Mult	access:private	signature:()
+NOPE	defines.h	/^    NOPE$/;"	e	enum:OP
+NUM_ISSUES	main.cpp	/^const int NUM_ISSUES      = 1; \/\/ NOTE: was defined to be 2, non-configurable in project$/;"	v
+OP	defines.h	/^enum OP$/;"	g
+OP_names	printers.cpp	/^const std::map<int , std::string> OP_names =$/;"	v
+PipeDelay	functions.h	/^    class PipeDelay : public SyncBlock < MemAccess >$/;"	c	class:Memory	inherits:SyncBlock	access:private
+Queue	queue.h	/^    Queue(int size)$/;"	f	class:Queue	access:public	signature:(int size)
+Queue	queue.h	/^class Queue : public AsyncQueue< T > ,$/;"	c	inherits:AsyncQueue,SyncBlockBase
+Queue::Queue	queue.h	/^    Queue(int size)$/;"	f	class:Queue	access:public	signature:(int size)
+Queue::clock	queue.h	/^    void clock() {$/;"	f	class:Queue	access:public	signature:()
+REGISTERS_NUM	main.cpp	/^const int REGISTERS_NUM   = 16; \/\/ Number of FP registers$/;"	v
+Register	register.h	/^    Register(int size)$/;"	f	class:Register	access:public	signature:(int size)
+Register	register.h	/^class Register : public SyncBlock< std::vector<VQ> >$/;"	c	inherits:SyncBlock
+Register::Register	register.h	/^    Register(int size)$/;"	f	class:Register	access:public	signature:(int size)
+Register::clock	register.h	/^    void clock()$/;"	f	class:Register	access:public	signature:()
+Register::current	register.h	/^    std::vector<VQ> current;$/;"	m	class:Register	access:private
+Register::read	register.h	/^    const std::vector<VQ> &  read() { return this->current;}$/;"	f	class:Register	access:public	signature:()
+Register::write	register.h	/^    std::vector<VQ> & write() { return this->current; }$/;"	f	class:Register	access:public	signature:()
+ST	defines.h	/^    ST,$/;"	e	enum:OP
+SUB	defines.h	/^    SUB,$/;"	e	enum:OP
+SyncBlock	sync_block.h	/^class SyncBlock : public SyncBlockBase$/;"	c	inherits:SyncBlockBase
+SyncBlock::clock	sync_block.h	/^    virtual void     clock() = 0;$/;"	p	class:SyncBlock	access:public	signature:()
+SyncBlock::is_busy	sync_block.h	/^    virtual bool     is_busy() {return false;}$/;"	f	class:SyncBlock	access:public	signature:()
+SyncBlock::read	sync_block.h	/^    virtual const T& read() = 0;$/;"	p	class:SyncBlock	access:public	signature:()
+SyncBlock::write	sync_block.h	/^    virtual T&       write() = 0;$/;"	p	class:SyncBlock	access:public	signature:()
+SyncBlockBase	sync_block.h	/^class SyncBlockBase$/;"	c
+SyncBlockBase::clock	sync_block.h	/^    virtual void     clock() = 0;$/;"	p	class:SyncBlockBase	access:public	signature:()
+SyncBlockBase::is_busy	sync_block.h	/^    virtual bool     is_busy() {return false;}$/;"	f	class:SyncBlockBase	access:public	signature:()
+TraceEntry	trace.h	/^struct TraceEntry$/;"	s
+TraceEntry::cycle_executed_end	trace.h	/^    int cycle_executed_end   = -1;$/;"	m	struct:TraceEntry	access:public
+TraceEntry::cycle_executed_start	trace.h	/^    int cycle_executed_start = -1;$/;"	m	struct:TraceEntry	access:public
+TraceEntry::cycle_issued	trace.h	/^    int cycle_issued = -1;$/;"	m	struct:TraceEntry	access:public
+TraceEntry::cycle_write_cdb	trace.h	/^    int cycle_write_cdb      = -1;$/;"	m	struct:TraceEntry	access:public
+TraceEntry::inst_hex	trace.h	/^    std::string inst_hex;$/;"	m	struct:TraceEntry	access:public
+TraceEntry::pc	trace.h	/^    int pc = -1;$/;"	m	struct:TraceEntry	access:public
+TraceEntry::tag	trace.h	/^    std::string tag = "";$/;"	m	struct:TraceEntry	access:public
+VQ	vq.h	/^    VQ()$/;"	f	class:VQ	access:public	signature:()
+VQ	vq.h	/^class VQ : public SyncBlock < std::pair<std::string , float> > $/;"	c	inherits:SyncBlock
+VQ::VQ	vq.h	/^    VQ()$/;"	f	class:VQ	access:public	signature:()
+VQ::clock	vq.h	/^    void clock() { this->current = this->update; }$/;"	f	class:VQ	access:public	signature:()
+VQ::current	vq.h	/^    std::pair <std::string , float > current;$/;"	m	class:VQ	access:private
+VQ::is_ready	vq.h	/^    bool is_ready() const { return const_cast<VQ*>(this)->read().first.empty();}$/;"	f	class:VQ	access:public	signature:() const
+VQ::read	vq.h	/^    const std::pair <std::string , float >& read() { return this->current; } $/;"	f	class:VQ	access:private	signature:()
+VQ::set_tag	vq.h	/^    void set_tag(const std::string & ntag) { this->write().first = ntag ; this->write().second = -1;}$/;"	f	class:VQ	access:public	signature:(const std::string & ntag)
+VQ::set_val	vq.h	/^    void set_val(const float val) { this->write().first = ""; this->write().second = val; }$/;"	f	class:VQ	access:public	signature:(const float val)
+VQ::tag	vq.h	/^    const std::string& tag() const {return const_cast<VQ*>(this)->read().first;}$/;"	f	class:VQ	access:public	signature:() const
+VQ::update	vq.h	/^    std::pair <std::string , float > update;$/;"	m	class:VQ	access:private
+VQ::val	vq.h	/^    float val() const { return const_cast<VQ*>(this)->read().second; }$/;"	f	class:VQ	access:public	signature:() const
+VQ::write	vq.h	/^    std::pair <std::string , float >& write()      { return this->update; }$/;"	f	class:VQ	access:private	signature:()
+VQS	func_table.h	/^    std::pair<VQ , VQ> VQS;$/;"	m	struct:FuncTableEntry	access:public
+args	assm2hex.py	/^args   = parser.parse_args()$/;"	v
+as_float	func_table.h	/^        float    as_float;$/;"	m	union:FuncTableEntry::result_t	access:public
+as_int	func_table.h	/^        uint32_t as_int;$/;"	m	union:FuncTableEntry::result_t	access:public
+as_string	defines.h	/^    std::string as_string() const $/;"	f	struct:Instruction	access:public	signature:() const
+assm_lines	assm2hex.py	/^assm_lines = [line.rstrip() for line in open(args.assm).readlines()][1:]$/;"	v
+busy	func_table.h	/^    bool busy = false;$/;"	m	struct:FuncTableEntry	access:public
+clock	func_table.h	/^    void clock()$/;"	f	struct:FuncTableEntry	access:public	signature:()
+clock	functions.h	/^        void clock() { this->current_ = this->update_ ; }$/;"	f	class:Memory::PipeDelay	access:public	signature:()
+clock	functions.h	/^    virtual void clock()$/;"	f	class:BaseFunction	access:public	signature:()
+clock	functions.h	/^    void clock()$/;"	f	class:Memory	access:public	signature:()
+clock	queue.h	/^    void clock() {$/;"	f	class:Queue	access:public	signature:()
+clock	register.h	/^    void clock()$/;"	f	class:Register	access:public	signature:()
+clock	sync_block.h	/^    virtual void     clock() = 0;$/;"	p	class:SyncBlock	access:public	signature:()
+clock	sync_block.h	/^    virtual void     clock() = 0;$/;"	p	class:SyncBlockBase	access:public	signature:()
+clock	vq.h	/^    void clock() { this->current = this->update; }$/;"	f	class:VQ	access:public	signature:()
+cmd	functions.h	/^    FuncTableEntry cmd;$/;"	m	class:BaseFunction	access:protected
+creator	func_table.h	/^    FuncTableEntry* creator = NULL;$/;"	m	struct:FuncTableEntry	access:public
+current	register.h	/^    std::vector<VQ> current;$/;"	m	class:Register	access:private
+current	vq.h	/^    std::pair <std::string , float > current;$/;"	m	class:VQ	access:private
+current_	functions.h	/^        MemAccess current_;$/;"	m	class:Memory::PipeDelay	access:private
+cycle_executed_end	trace.h	/^    int cycle_executed_end   = -1;$/;"	m	struct:TraceEntry	access:public
+cycle_executed_start	trace.h	/^    int cycle_executed_start = -1;$/;"	m	struct:TraceEntry	access:public
+cycle_issued	trace.h	/^    int cycle_issued = -1;$/;"	m	struct:TraceEntry	access:public
+cycle_write_cdb	trace.h	/^    int cycle_write_cdb      = -1;$/;"	m	struct:TraceEntry	access:public
+decode	inst_decode.h	/^Instruction decode(uint32_t bin)$/;"	f	signature:(uint32_t bin)
+delay	functions.h	/^    int delay;$/;"	m	class:BaseFunction	access:protected
+dst	defines.h	/^    unsigned int dst  : 4;$/;"	m	struct:Instruction	access:public
+float_to_hex	assm2hex.py	/^def float_to_hex(f):$/;"	f	access:public
+get_queue	queue.h	/^    std::list< T > &  get_queue() { return this->queue_; }$/;"	f	class:AsyncQueue	access:public	signature:()
+help	assm2hex.py	/^                    help="input assm file , one line for Header, cmd per line")$/;"	v
+hex_out	assm2hex.py	/^hex_out = []$/;"	v
+id	queue.h	/^    int id = -1;$/;"	m	class:AsyncQueue	access:protected
+imm	defines.h	/^    unsigned int imm  : 12;$/;"	m	struct:Instruction	access:public
+inst_hex	trace.h	/^    std::string inst_hex;$/;"	m	struct:TraceEntry	access:public
+instruction	func_table.h	/^    Instruction instruction;$/;"	m	struct:FuncTableEntry	access:public
+is_busy	functions.h	/^    bool is_busy() { return this->new_request; }$/;"	f	class:Memory	access:public	signature:()
+is_busy	functions.h	/^    virtual bool is_busy() { return time != -1;}$/;"	f	class:BaseFunction	access:public	signature:()
+is_busy	sync_block.h	/^    virtual bool     is_busy() {return false;}$/;"	f	class:SyncBlock	access:public	signature:()
+is_busy	sync_block.h	/^    virtual bool     is_busy() {return false;}$/;"	f	class:SyncBlockBase	access:public	signature:()
+is_empt	queue.h	/^    bool is_empt() {return this->queue_.size() == 0 ; }$/;"	f	class:AsyncQueue	access:public	signature:()
+is_full	queue.h	/^    bool is_full() {return this->queue_.size() == size ; }$/;"	f	class:AsyncQueue	access:public	signature:()
+is_half_full	queue.h	/^    bool is_half_full() { return this->queue_.size() > size\/2 ;}$/;"	f	class:AsyncQueue	access:public	signature:()
+is_ready	vq.h	/^    bool is_ready() const { return const_cast<VQ*>(this)->read().first.empty();}$/;"	f	class:VQ	access:public	signature:() const
+main	main.cpp	/^int main(int argc , char ** argv)$/;"	f	signature:(int argc , char ** argv)
+mem_cache_	functions.h	/^    std::vector<uint32_t>   mem_cache_;$/;"	m	class:Memory	access:private
+new_cmd	functions.h	/^    FuncTableEntry new_cmd;$/;"	m	class:BaseFunction	access:protected
+new_request	functions.h	/^    bool                    new_request = false;$/;"	m	class:Memory	access:private
+null	functions.h	/^    FuncTableEntry null;$/;"	m	class:BaseFunction	access:protected
+null	queue.h	/^    T                                       null = T();$/;"	m	class:AsyncQueue	access:protected
+op	defines.h	/^    unsigned int op   : 4;$/;"	m	struct:Instruction	access:public
+op	func_table.h	/^    OP   op   = OP::INVALID;$/;"	m	struct:FuncTableEntry	access:public
+op	functions.h	/^    const FuncTableEntry& op()$/;"	f	class:Add	access:private	signature:()
+op	functions.h	/^    const FuncTableEntry& op()$/;"	f	class:Div	access:private	signature:()
+op	functions.h	/^    const FuncTableEntry& op()$/;"	f	class:Mult	access:private	signature:()
+op	functions.h	/^    virtual const FuncTableEntry& op() = 0;$/;"	p	class:BaseFunction	access:protected	signature:()
+operator <<	printers.cpp	/^std::ostream& operator <<(std::ostream& osObject , const std::map<int , TraceEntry> & obj)$/;"	f	signature:(std::ostream& osObject , const std::map<int , TraceEntry> & obj)
+operator <<	printers.cpp	/^std::ostream& operator <<(std::ostream& osObject, const Instruction & obj)$/;"	f	signature:(std::ostream& osObject, const Instruction & obj)
+operator <<	printers.cpp	/^std::ostream& operator <<(std::ostream& osObject, const Register & obj)$/;"	f	signature:(std::ostream& osObject, const Register & obj)
+operator <<	printers.cpp	/^std::ostream& operator <<(std::ostream& osObject, const VQ& obj)$/;"	f	signature:(std::ostream& osObject, const VQ& obj)
+operator <<	printers.hpp	/^std::ostream& operator <<(std::ostream& osObject , const std::map<int , TraceEntry> & obj);$/;"	p	signature:(std::ostream& osObject , const std::map<int , TraceEntry> & obj)
+operator <<	printers.hpp	/^std::ostream& operator <<(std::ostream& osObject, const Instruction & obj);$/;"	p	signature:(std::ostream& osObject, const Instruction & obj)
+operator <<	printers.hpp	/^std::ostream& operator <<(std::ostream& osObject, const Register & obj);$/;"	p	signature:(std::ostream& osObject, const Register & obj)
+operator <<	printers.hpp	/^std::ostream& operator <<(std::ostream& osObject, const VQ& obj);$/;"	p	signature:(std::ostream& osObject, const VQ& obj)
+parser	assm2hex.py	/^parser = argparse.ArgumentParser("assm to hex converter")$/;"	v
+pc	func_table.h	/^    int  pc   = -1;$/;"	m	struct:FuncTableEntry	access:public
+pc	trace.h	/^    int pc = -1;$/;"	m	struct:TraceEntry	access:public
+peek	queue.h	/^    T & peek()$/;"	f	class:AsyncQueue	access:public	signature:()
+pipe_delay_	functions.h	/^    std::vector<PipeDelay>  pipe_delay_;$/;"	m	class:Memory	access:private
+pop	queue.h	/^    void pop()$/;"	f	class:AsyncQueue	access:public	signature:()
+port	functions.h	/^    std::vector<FuncTableEntry> port;$/;"	m	struct:MemAccess	access:public
+push	queue.h	/^    std::string push(const T& inst , const std::string & tag)$/;"	f	class:AsyncQueue	access:public	signature:(const T& inst , const std::string & tag)
+push	queue.h	/^    void push(const T& inst)$/;"	f	class:AsyncQueue	access:public	signature:(const T& inst)
+queue_	queue.h	/^    std::list< T > queue_;$/;"	m	class:AsyncQueue	access:protected
+read	functions.h	/^        const MemAccess& read() { return current_;}$/;"	f	class:Memory::PipeDelay	access:public	signature:()
+read	functions.h	/^    const MemAccess& read() {return this->pipe_delay_.back().read(); }$/;"	f	class:Memory	access:public	signature:()
+read	functions.h	/^    virtual const FuncTableEntry& read()$/;"	f	class:BaseFunction	access:public	signature:()
+read	register.h	/^    const std::vector<VQ> &  read() { return this->current;}$/;"	f	class:Register	access:public	signature:()
+read	sync_block.h	/^    virtual const T& read() = 0;$/;"	p	class:SyncBlock	access:public	signature:()
+read	vq.h	/^    const std::pair <std::string , float >& read() { return this->current; } $/;"	f	class:VQ	access:private	signature:()
+reserved	defines.h	/^    unsigned int reserved : 4;$/;"	m	struct:Instruction	access:public
+resevatoryToUnit	main.cpp	/^bool resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , MemAccess & mem_write)$/;"	f	signature:(AsyncQueue<FuncTableEntry>& reservatory , MemAccess & mem_write)
+resevatoryToUnit	main.cpp	/^void resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , std::vector< std::shared_ptr<BaseFunction> > & units , Register& register_file)$/;"	f	signature:(AsyncQueue<FuncTableEntry>& reservatory , std::vector< std::shared_ptr<BaseFunction> > & units , Register& register_file)
+result	func_table.h	/^    } result;$/;"	m	struct:FuncTableEntry	typeref:union:FuncTableEntry::result_t	access:public
+result	functions.h	/^    FuncTableEntry result;$/;"	m	class:BaseFunction	access:protected
+result_t	func_table.h	/^    union result_t$/;"	u	struct:FuncTableEntry	access:public
+set_tag	vq.h	/^    void set_tag(const std::string & ntag) { this->write().first = ntag ; this->write().second = -1;}$/;"	f	class:VQ	access:public	signature:(const std::string & ntag)
+set_val	vq.h	/^    void set_val(const float val) { this->write().first = ""; this->write().second = val; }$/;"	f	class:VQ	access:public	signature:(const float val)
+size	queue.h	/^    int size ;$/;"	m	class:AsyncQueue	access:protected
+src0	defines.h	/^    unsigned int src0 : 4;$/;"	m	struct:Instruction	access:public
+src1	defines.h	/^    unsigned int src1 : 4;$/;"	m	struct:Instruction	access:public
+tag	func_table.h	/^    std::string tag = "";$/;"	m	struct:FuncTableEntry	access:public
+tag	trace.h	/^    std::string tag = "";$/;"	m	struct:TraceEntry	access:public
+tag	vq.h	/^    const std::string& tag() const {return const_cast<VQ*>(this)->read().first;}$/;"	f	class:VQ	access:public	signature:() const
+time	func_table.h	/^    int  time = 0;$/;"	m	struct:FuncTableEntry	access:public
+time	functions.h	/^    int time = -1;$/;"	m	class:BaseFunction	access:protected
+update	vq.h	/^    std::pair <std::string , float > update;$/;"	m	class:VQ	access:private
+updateTableWithUnitsOutout	main.cpp	/^void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &       function_unit_tables ,$/;"	f	signature:(std::list< AsyncQueue<FuncTableEntry> * > & function_unit_tables , std::vector< std::shared_ptr<BaseFunction> > & adders, std::vector< std::shared_ptr<BaseFunction> > & multipliers, std::vector< std::shared_ptr<BaseFunction> > & dividers, Register& register_file, const MemAccess& mem_read)
+updateUnit	main.cpp	/^void updateUnit(std::list< AsyncQueue<FuncTableEntry> * > &     function_unit_tables,$/;"	f	signature:(std::list< AsyncQueue<FuncTableEntry> * > & function_unit_tables, const FuncTableEntry & out, Register & register_file)
+update_	functions.h	/^        MemAccess update_;$/;"	m	class:Memory::PipeDelay	access:private
+val	vq.h	/^    float val() const { return const_cast<VQ*>(this)->read().second; }$/;"	f	class:VQ	access:public	signature:() const
+write	functions.h	/^        MemAccess& write() { return update_;}$/;"	f	class:Memory::PipeDelay	access:public	signature:()
+write	functions.h	/^    MemAccess& write() { this->new_request = true ; this->pipe_delay_.front().write() = MemAccess() ; return this->pipe_delay_.front().write(); }$/;"	f	class:Memory	access:public	signature:()
+write	functions.h	/^    virtual FuncTableEntry&  write()$/;"	f	class:BaseFunction	access:public	signature:()
+write	register.h	/^    std::vector<VQ> & write() { return this->current; }$/;"	f	class:Register	access:public	signature:()
+write	sync_block.h	/^    virtual T&       write() = 0;$/;"	p	class:SyncBlock	access:public	signature:()
+write	vq.h	/^    std::pair <std::string , float >& write()      { return this->update; }$/;"	f	class:VQ	access:private	signature:()
+~BaseFunction	functions.h	/^    virtual ~BaseFunction() {}$/;"	f	class:BaseFunction	access:public	signature:()
+~Memory	functions.h	/^    virtual ~Memory() {}$/;"	f	class:Memory	access:public	signature:()

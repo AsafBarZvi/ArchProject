@@ -144,7 +144,7 @@ struct MemAccess
 #define DATA_PORT 2
 
 
-class Memory : public SyncBlock < MemAccess >  
+class Memory : public SyncBlock < MemAccess > 
 {
 
     class PipeDelay : public SyncBlock < MemAccess >
@@ -168,7 +168,7 @@ class Memory : public SyncBlock < MemAccess >
 public:
     Memory(const std::string&  mem_file , int delay)
     {
-        mem_cache_.resize(4096,0x06000000);
+        mem_cache_.resize(4096,0x00000000);
         std::ifstream file(mem_file);
         if (!file.is_open())
             throw std::runtime_error("unable to open file " + mem_file); 
@@ -195,7 +195,7 @@ public:
     bool is_busy() { return this->new_request; }
     MemAccess& write() { this->new_request = true ; this->pipe_delay_.front().write() = MemAccess() ; return this->pipe_delay_.front().write(); }
     const MemAccess& read() {return this->pipe_delay_.back().read(); }
-    
+    std::vector<uint32_t>& get_mem() { return this->mem_cache_; }
 
 
     void clock()

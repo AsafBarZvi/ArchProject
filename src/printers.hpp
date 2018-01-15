@@ -10,4 +10,8 @@ std::ostream& operator <<(std::ostream& osObject, const Instruction & obj);
 
 std::ostream& operator <<(std::ostream& osObject, const Register & obj);
 
+std::ostream& operator <<(std::ostream& osObject, const std::vector<uint32_t> & obj);
+
 std::ostream& operator <<(std::ostream& osObject , const std::map<int , TraceEntry> & obj);
+
+std::ostream& operator <(std::ostream& osObject ,  const std::map<int , TraceEntry> & obj);

@@ -12,6 +12,7 @@ struct TraceEntry
     int cycle_executed_start = -1;
     int cycle_executed_end   = -1;
     int cycle_write_cdb      = -1;
+    int data = -1;
 };
 
 

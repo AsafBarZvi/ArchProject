@@ -31,7 +31,7 @@ for assm in assm_lines:
         hex_line.append("02")
     elif (op_code.upper() == "SUB"):
         hex_line.append("03")
-    elif (op_code.upper() == "MULT"):
+    elif (op_code.upper() == "MUL"):
         hex_line.append("04")
     elif (op_code.upper() == "DIV"):
         hex_line.append("05")

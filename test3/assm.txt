@@ -1,0 +1,42 @@
+op      dst     s0      s1      imm
+LD      1       0       0       20
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+NOPE    0       0       0       0
+ADD     7       5       6       0
+MUL     2       1       1       0
+MUL     3       2       2       0
+NOPE    0       0       0       0
+ST      0       0       0       30
+HALT    0       0       0       0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   5.0
+VALUE   5.0
+VALUE   5.0
+VALUE   5.0
+VALUE   5.0
+VALUE   5.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0
+VALUE   2.0

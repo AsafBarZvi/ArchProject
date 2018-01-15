@@ -20,6 +20,8 @@ protected:
     T                                       null = T();
     int size ;
     int id = -1;
+    bool on_cdb = false;
+    int currClock = -1;
 
 
 public:
@@ -54,9 +56,17 @@ public:
 
     bool is_empt() {return this->queue_.size() == 0 ; }
 
+    bool is_full_less_one() {return this->queue_.size() == size - 1 ; }
+
     bool is_full() {return this->queue_.size() == size ; }
 
     bool is_half_full() { return this->queue_.size() > size/2 ;}
+    
+    void set_cdb (int cclock) { on_cdb = true; currClock = cclock;}
+    void unset_cdb () { on_cdb = false; }
+    bool is_cdb () { return on_cdb; }
+    int  get_cdb_clock () { return currClock; }
+
 
     std::list< T > &  get_queue() { return this->queue_; }
 

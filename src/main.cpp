@@ -88,6 +88,7 @@ void updateUnit(std::list< AsyncQueue<FuncTableEntry> * > &     function_unit_ta
             {
                 assert(out.creator == &(*i));
                 i = unit_reservatory->get_queue().erase(i);
+                unit_reservatory->set_cdb(CLOCK);
                 break;
             }
             i++;
@@ -124,6 +125,7 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
             {
                 auto & trace  = IT[out.pc];
                 trace.cycle_write_cdb = CLOCK + 1;
+                trace.data = static_cast<int>(out.result.as_float);
                 updateUnit(function_unit_tables , out , register_file);
                 break; // Single CDB per functional unit group , .i.e. unit is busy while CDB is not available 
 
@@ -138,9 +140,18 @@ void updateTableWithUnitsOutout(std::list< AsyncQueue<FuncTableEntry> * > &     
     {
         auto & trace  = IT[out.pc];
         trace.cycle_write_cdb = CLOCK + 1; 
+        std::stringstream conv;
+        conv << std::hex << out.result.as_int;
+        trace.data = std::stoi(conv.str());
         updateUnit(function_unit_tables, out , register_file);
         assert(!register_file.write().at(mem_read.port[2].instruction.dst).is_ready() ||
                register_file.write().at(mem_read.port[2].instruction.dst).val() == out.result.as_float);
+    }
+
+    for (auto & unit_reservatory : function_unit_tables)
+    {
+        if ((CLOCK != unit_reservatory->get_cdb_clock()) && unit_reservatory->is_cdb())
+            unit_reservatory->unset_cdb();
     }
 
 }
@@ -328,8 +339,8 @@ int main(int argc , char ** argv)
                 
                 if (inst.op == OP::HALT)
                 {
-                    auto & trace = IT[inst_pair.first];
-                    trace.cycle_issued = CLOCK;
+                    //auto & trace = IT[inst_pair.first];
+                    //trace.cycle_issued = CLOCK;
                     is_halt = true;
                     break;
                 }
@@ -337,18 +348,18 @@ int main(int argc , char ** argv)
                 if (inst.op == OP::NOPE)
                     inst_queue.pop();
 
-                bool available_reservatory = ( (inst.op == OP::ADD || inst.op == OP::SUB) && (!adders_reservatory.is_full()) ) ||
-                                             ( inst.op  == OP::MULT && !mult_reservatory.is_full() )                           ||
-                                             ( inst.op  == OP::DIV  && !div_reservatory.is_full()  )                           ||
-                                             ( inst.op  == OP::ST   && !store_buffer.is_full()     )                           ||
-                                             ( inst.op  == OP::LD   && !load_buffer.is_full()      )                           ;
+                bool available_reservatory = ( (inst.op == OP::ADD || inst.op == OP::SUB) && (!adders_reservatory.is_full()) && (!(adders_reservatory.is_full_less_one() && adders_reservatory.is_cdb())) ) ||
+                                             ( inst.op  == OP::MULT && !mult_reservatory.is_full() && (!(mult_reservatory.is_full_less_one() && mult_reservatory.is_cdb())) )                               ||
+                                             ( inst.op  == OP::DIV  && !div_reservatory.is_full()  && (!(div_reservatory.is_full_less_one() && div_reservatory.is_cdb()))   )                               ||
+                                             ( inst.op  == OP::ST   && !store_buffer.is_full()     && (!(store_buffer.is_full_less_one() && store_buffer.is_cdb()))         )                               ||
+                                             ( inst.op  == OP::LD   && !load_buffer.is_full()      && (!(load_buffer.is_full_less_one() && load_buffer.is_cdb()))           );
 
                 /* Check if not accumulator, dst == src and dst is pending result, in that case must wait for result,
                  * since re-tagging dst with cause deadlock, infinitely waiting for src
                  */
-                bool is_accumulator       = (( inst.dst == inst.src0 || inst.dst == inst.src1 ) & !register_file.write().at(inst.dst).is_ready());
+                //bool is_accumulator       = (( inst.dst == inst.src0 || inst.dst == inst.src1 ) & !register_file.write().at(inst.dst).is_ready());
 
-                if (available_reservatory && !is_accumulator)
+                if (available_reservatory) //&& !is_accumulator)
                 {
                     FuncTableEntry tentry;
                     tentry.busy = false;
@@ -433,6 +444,7 @@ int main(int argc , char ** argv)
        resevatoryToUnit(load_buffer,mem_write) || resevatoryToUnit(store_buffer,mem_write);    //Always tring to load and then store
 
 
+       
        // ----------------------------------------------------------------------------------------------------------------------- //
         
        /*
@@ -444,6 +456,10 @@ int main(int argc , char ** argv)
 
    }
 
+   std::ofstream memoutFile;
+   memoutFile.open(inputFiles[2]);
+   memoutFile << mem_unit.get_mem() << std::endl;
+   std::cout << mem_unit.get_mem() << std::endl;
 
    std::ofstream regoutFile;
    regoutFile.open(inputFiles[3]);
@@ -454,6 +470,14 @@ int main(int argc , char ** argv)
    traceinstFile.open(inputFiles[4]);
    traceinstFile << IT << std::endl;
    std::cout << IT << std::endl;
-   std::cout << register_file << std::endl;
+
+   std::ofstream tracecdbFile;
+   tracecdbFile.open(inputFiles[5]);
+   tracecdbFile < IT;
+   std::cout < IT;
 
 }
+
+
+
+

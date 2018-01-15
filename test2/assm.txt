@@ -1,0 +1,46 @@
+op      dst     s0      s1      imm
+DIV     8       8       2       0
+DIV     8       8       2       0
+DIV     8       8       2       0
+ADD     8       8       1       0
+ADD     8       8       1       0
+ADD     8       8       1       0
+ADD     8       8       1       0
+ADD     8       8       1       0
+ADD     8       8       1       0
+ADD     8       8       1       0
+MUL     8       8       2       0
+MUL     8       8       2       0
+MUL     8       8       2       0
+HALT    0       0       0       0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0
+VALUE   1.0

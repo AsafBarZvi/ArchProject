@@ -54,6 +54,18 @@ std::ostream& operator <<(std::ostream& osObject, const Register & obj)
     return osObject;
 }
 
+std::ostream& operator <<(std::ostream& osObject, const std::vector<uint32_t> & obj)
+{
+    for (const auto &e : obj)
+    {
+        std::stringstream converter;
+        converter << std::setw(8) << std::setfill('0') << std::hex << e;
+        osObject << converter.str() << "\n";
+    }
+
+    return osObject;
+}
+
 std::ostream& operator <<(std::ostream& osObject , const std::map<int , TraceEntry> & obj)
 {
     for (auto & pc_iter : obj)
@@ -68,6 +80,32 @@ std::ostream& operator <<(std::ostream& osObject , const std::map<int , TraceEnt
                  << pc_iter.second.cycle_executed_start                << " "
                  << pc_iter.second.cycle_executed_end                  << " "
                  << pc_iter.second.cycle_write_cdb                     << "\n";
+
+    }
+
+    return osObject;
+}
+
+std::ostream& operator <(std::ostream& osObject , const std::map<int , TraceEntry> & obj)
+{
+    for (auto & pc_iter : obj)
+    {
+        if (pc_iter.second.cycle_issued == -1)
+            continue;
+
+        std::string cdbname = pc_iter.second.tag;
+        for(int i = 0; i < cdbname.size(); ++i)
+            if (!((cdbname[i] >= 'A' && cdbname[i]<='z') || (cdbname[i] >= 'A' && cdbname[i]<='Z')))
+                cdbname[i] = '\0';
+        
+        if (cdbname.length() == 3)
+            cdbname = std::string("MEM");
+
+        osObject << pc_iter.second.cycle_write_cdb                     << " " 
+                 << pc_iter.second.pc                                  << " "
+                 << cdbname                                            << " "
+                 << pc_iter.second.data                                << " "
+                 << pc_iter.second.tag                                 << "\n";
 
     }
 
