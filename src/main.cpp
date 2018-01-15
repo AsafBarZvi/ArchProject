@@ -37,7 +37,7 @@ void resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , std::vector< std
                      cmd = req;
                      cmd.creator = &req;
                      auto & trace = IT[req.pc];
-                     trace.cycle_executed_start = CLOCK;
+                     trace.cycle_executed_start = CLOCK + 1;
                      break;
                  }
              }
@@ -55,7 +55,7 @@ bool resevatoryToUnit(AsyncQueue<FuncTableEntry>& reservatory , MemAccess & mem_
              mem_write.port[2] = req;
              mem_write.port[2].creator = &req;
              auto & trace = IT[req.pc];
-             trace.cycle_executed_start = CLOCK; 
+             trace.cycle_executed_start = CLOCK + 1; 
              return true;
          }
     }
@@ -254,6 +254,15 @@ int main(int argc , char ** argv)
    blocks.push_back(&mem_unit);
    // ----------------------------------------------------------------------------------------------------------------------- //
 
+   // Set CLOCK to mem_delay for instruction pre-fetch
+   int preFetchCycles = mem_delay - 1;
+   while (preFetchCycles)
+   {
+       CLOCK--;
+       preFetchCycles--;
+   }
+
+   bool is_halt = false;
    int pc = 0;
    while (true)
    {
@@ -263,138 +272,144 @@ int main(int argc , char ** argv)
         * FETCH
         */
        auto & mem_write = mem_unit.write();
-       if (!inst_queue.is_half_full())
+       if (!is_halt)
        {
-            // FETCH 0
-            mem_write.port[0].op = OP::LD;
-            mem_write.port[0].instruction.dst = 0;
-            mem_write.port[0].instruction.imm  = pc;
-            mem_write.port[0].instruction.op = OP::LD;
-            mem_write.port[0].pc = pc;
-            // FETCH 1
-            mem_write.port[1].op = OP::LD;
-            mem_write.port[1].instruction.dst = 0;
-            mem_write.port[1].instruction.imm  = pc + 1;
-            mem_write.port[1].instruction.op = OP::LD;
-            mem_write.port[1].pc = pc + 1;
-            pc +=2;
+           if (!inst_queue.is_half_full())
+           {
+                // FETCH 0
+                mem_write.port[0].op = OP::LD;
+                mem_write.port[0].instruction.dst = 0;
+                mem_write.port[0].instruction.imm  = pc;
+                mem_write.port[0].instruction.op = OP::LD;
+                mem_write.port[0].pc = pc;
+                // FETCH 1
+                mem_write.port[1].op = OP::LD;
+                mem_write.port[1].instruction.dst = 0;
+                mem_write.port[1].instruction.imm  = pc + 1;
+                mem_write.port[1].instruction.op = OP::LD;
+                mem_write.port[1].pc = pc + 1;
+                pc +=2;
+           }
        }
-
 
        auto & mem_read = mem_unit.read();
-       assert(!inst_queue.is_full());
-       // Assuming write to instruction queue is not through CDB, 
-       // i.e. every clock DATA can be written to register file
-       if (mem_read.port[0].op == OP::DONE)
+       if (!is_halt)
        {
-           inst_queue.push(std::make_pair(mem_read.port[0].pc  , decode(mem_read.port[0].result.as_int)));
-           auto & trace = IT[mem_read.port[0].pc];
-           trace.pc     = mem_read.port[0].pc;
-           trace.inst_hex = decode(mem_read.port[0].result.as_int).as_string();
+           assert(!inst_queue.is_full());
+           // Assuming write to instruction queue is not through CDB, 
+           // i.e. every clock DATA can be written to register file
+           if (mem_read.port[0].op == OP::DONE)
+           {
+               inst_queue.push(std::make_pair(mem_read.port[0].pc  , decode(mem_read.port[0].result.as_int)));
+               auto & trace = IT[mem_read.port[0].pc];
+               trace.pc     = mem_read.port[0].pc;
+               trace.inst_hex = decode(mem_read.port[0].result.as_int).as_string();
+           }
+
+           if (mem_read.port[1].op == OP::DONE)
+           {
+               inst_queue.push(std::make_pair(mem_read.port[1].pc  , decode(mem_read.port[1].result.as_int)));
+               auto & trace = IT[mem_read.port[1].pc];
+               trace.pc     = mem_read.port[1].pc;
+               trace.inst_hex = decode(mem_read.port[1].result.as_int).as_string();
+           }
+
+           // ----------------------------------------------------------------------------------------------------------------------- //
+           
+           /*
+            * ISSUE
+            * -> reservatory
+            */
+
+           for (int i = 0 ; i < NUM_ISSUES ; i ++)
+           {
+                auto & inst_pair = inst_queue.peek();
+                auto & inst = inst_pair.second;
+                
+                if (inst.op == OP::HALT)
+                {
+                    auto & trace = IT[inst_pair.first];
+                    trace.cycle_issued = CLOCK;
+                    is_halt = true;
+                    break;
+                }
+
+                if (inst.op == OP::NOPE)
+                    inst_queue.pop();
+
+                bool available_reservatory = ( (inst.op == OP::ADD || inst.op == OP::SUB) && (!adders_reservatory.is_full()) ) ||
+                                             ( inst.op  == OP::MULT && !mult_reservatory.is_full() )                           ||
+                                             ( inst.op  == OP::DIV  && !div_reservatory.is_full()  )                           ||
+                                             ( inst.op  == OP::ST   && !store_buffer.is_full()     )                           ||
+                                             ( inst.op  == OP::LD   && !load_buffer.is_full()      )                           ;
+
+                /* Check if not accumulator, dst == src and dst is pending result, in that case must wait for result,
+                 * since re-tagging dst with cause deadlock, infinitely waiting for src
+                 */
+                bool is_accumulator       = (( inst.dst == inst.src0 || inst.dst == inst.src1 ) & !register_file.write().at(inst.dst).is_ready());
+
+                if (available_reservatory && !is_accumulator)
+                {
+                    FuncTableEntry tentry;
+                    tentry.busy = false;
+                    tentry.instruction = inst;
+                    tentry.op   = OP(inst.op);
+                    tentry.pc   = inst_pair.first;
+                    tentry.VQS.first = register_file.write().at(inst.src0);         
+                    tentry.VQS.second = register_file.write().at(inst.src1);
+                    if       (inst.op == OP::ADD || inst.op == OP::SUB)
+                    {
+                         auto  tag = adders_reservatory.push(tentry,"ADD");
+                         register_file.write().at(inst.dst).set_tag(tag);
+                         auto & trace = IT[inst_pair.first];
+                         trace.tag = tag;
+                         trace.cycle_issued = CLOCK;
+                    }
+                    else if  (inst.op == OP::MULT)
+                    {
+                         auto  tag = mult_reservatory.push(tentry,"MUL");
+                         register_file.write().at(inst.dst).set_tag(tag);
+                         auto & trace = IT[inst_pair.first];
+                         trace.tag = tag;
+                         trace.cycle_issued = CLOCK;
+                    }
+                    else if  (inst.op == OP::DIV)
+                    {
+                         auto  tag = div_reservatory.push(tentry,"DIV");
+                         register_file.write().at(inst.dst).set_tag(tag);
+                         auto & trace = IT[inst_pair.first];
+                         trace.tag = tag;
+                         trace.cycle_issued = CLOCK;
+                    }
+                    else if  (inst.op == OP::ST)
+                    {
+                         auto  tag = store_buffer.push(tentry,"ST");
+                         auto & trace = IT[inst_pair.first];
+                         trace.tag = tag;
+                         trace.cycle_issued = CLOCK;
+                    }
+                    else if  (inst.op == OP::LD)
+                    {
+                         auto  tag = load_buffer.push(tentry,"LD");
+                         register_file.write().at(inst.dst).set_tag(tag);
+                         auto & trace = IT[inst_pair.first];
+                         trace.tag = tag;
+                         trace.cycle_issued = CLOCK;
+                    }
+                        
+                    std::cout << "In Resv -> " << inst << std::endl;
+                    inst_queue.pop();
+                }
+                else
+                    break;
+           }
        }
 
-       if (mem_read.port[1].op == OP::DONE)
-       {
-           inst_queue.push(std::make_pair(mem_read.port[1].pc  , decode(mem_read.port[1].result.as_int)));
-           auto & trace = IT[mem_read.port[1].pc];
-           trace.pc     = mem_read.port[1].pc;
-           trace.inst_hex = decode(mem_read.port[1].result.as_int).as_string();
-       }
 
-       // ----------------------------------------------------------------------------------------------------------------------- //
-       
-       /*
-        * ISSUE
-        * -> reservatory
-        */
-
-       bool is_halt = false;
-       for (int i = 0 ; i < NUM_ISSUES ; i ++)
-       {
-            auto & inst_pair = inst_queue.peek();
-            auto & inst = inst_pair.second;
-            
-            if (inst.op == OP::HALT)
-            {
-                auto & trace = IT[inst_pair.first];
-                trace.cycle_issued = CLOCK;
-                is_halt = true;
-                break;
-            }
-
-            if (inst.op == OP::NOPE)
-                inst_queue.pop();
-
-            bool available_reservatory = ( (inst.op == OP::ADD || inst.op == OP::SUB) && (!adders_reservatory.is_full()) ) ||
-                                         ( inst.op  == OP::MULT && !mult_reservatory.is_full() )                           ||
-                                         ( inst.op  == OP::DIV  && !div_reservatory.is_full()  )                           ||
-                                         ( inst.op  == OP::ST   && !store_buffer.is_full()     )                           ||
-                                         ( inst.op  == OP::LD   && !load_buffer.is_full()      )                           ;
-
-            /* Check if not accumulator, dst == src and dst is pending result, in that case must wait for result,
-             * since re-tagging dst with cause deadlock, infinitely waiting for src
-             */
-            bool is_accumulator       = (( inst.dst == inst.src0 || inst.dst == inst.src1 ) & !register_file.write().at(inst.dst).is_ready());
-
-            if (available_reservatory && !is_accumulator)
-            {
-                FuncTableEntry tentry;
-                tentry.busy = false;
-                tentry.instruction = inst;
-                tentry.op   = OP(inst.op);
-                tentry.pc   = inst_pair.first;
-                tentry.VQS.first = register_file.write().at(inst.src0);         
-                tentry.VQS.second = register_file.write().at(inst.src1);
-                if       (inst.op == OP::ADD || inst.op == OP::SUB)
-                {
-                     auto  tag = adders_reservatory.push(tentry,"add");
-                     register_file.write().at(inst.dst).set_tag(tag);
-                     auto & trace = IT[inst_pair.first];
-                     trace.tag = tag;
-                     trace.cycle_issued = CLOCK;
-                }
-                else if  (inst.op == OP::MULT)
-                {
-                     auto  tag = mult_reservatory.push(tentry,"mult");
-                     register_file.write().at(inst.dst).set_tag(tag);
-                     auto & trace = IT[inst_pair.first];
-                     trace.tag = tag;
-                     trace.cycle_issued = CLOCK;
-                }
-                else if  (inst.op == OP::DIV)
-                {
-                     auto  tag = div_reservatory.push(tentry,"div");
-                     register_file.write().at(inst.dst).set_tag(tag);
-                     auto & trace = IT[inst_pair.first];
-                     trace.tag = tag;
-                     trace.cycle_issued = CLOCK;
-                }
-                else if  (inst.op == OP::ST)
-                {
-                     auto  tag = store_buffer.push(tentry,"st");
-                     auto & trace = IT[inst_pair.first];
-                     trace.tag = tag;
-                     trace.cycle_issued = CLOCK;
-                }
-                else if  (inst.op == OP::LD)
-                {
-                     auto  tag = load_buffer.push(tentry,"ld");
-                     register_file.write().at(inst.dst).set_tag(tag);
-                     auto & trace = IT[inst_pair.first];
-                     trace.tag = tag;
-                     trace.cycle_issued = CLOCK;
-                }
-                    
-                std::cout << "In Resv -> " << inst << std::endl;
-                inst_queue.pop();
-            }
-            else
-                break;
-       }
-
-
+      // Wait for functional units to complete all instruction  
        if (is_halt)
-           break;
+           if (adders_reservatory.is_empt() && mult_reservatory.is_empt() && div_reservatory.is_empt() && store_buffer.is_empt() && load_buffer.is_empt())
+               break;
 
        /*
         * ISSUE
@@ -430,6 +445,14 @@ int main(int argc , char ** argv)
    }
 
 
+   std::ofstream regoutFile;
+   regoutFile.open(inputFiles[3]);
+   regoutFile << register_file << std::endl;
+   std::cout << register_file << std::endl;
+
+   std::ofstream traceinstFile;
+   traceinstFile.open(inputFiles[4]);
+   traceinstFile << IT << std::endl;
    std::cout << IT << std::endl;
    std::cout << register_file << std::endl;
 

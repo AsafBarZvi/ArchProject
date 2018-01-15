@@ -52,6 +52,8 @@ public:
         
     }
 
+    bool is_empt() {return this->queue_.size() == 0 ; }
+
     bool is_full() {return this->queue_.size() == size ; }
 
     bool is_half_full() { return this->queue_.size() > size/2 ;}
